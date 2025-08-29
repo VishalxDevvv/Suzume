@@ -2,33 +2,32 @@ const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
     name: 'password',
-    description: 'Generate a secure password',
+    description: 'Generate secure password',
     async execute(message, args) {
-        const length = args[0] ? parseInt(args[0]) : 12;
-        if (length < 4 || length > 50) {
-            return message.reply('Password length must be between 4 and 50 characters!');
-        }
+        const length = parseInt(args[0]) || 16;
         
+        if (length < 8 || length > 64) {
+            return message.reply('⚠️ Password length must be between 8-64 characters');
+        }
+
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
         let password = '';
         
         for (let i = 0; i < length; i++) {
             password += chars.charAt(Math.floor(Math.random() * chars.length));
         }
-        
+
         const embed = new EmbedBuilder()
             .setTitle('🔐 Secure Password Generated')
             .setDescription(`\`\`\`${password}\`\`\``)
-            .addFields({ name: 'Length', value: length.toString(), inline: true })
-            .setColor('#800080')
-            .setFooter({ text: 'Keep this password safe and secure!' })
+            .addFields(
+                { name: '📏 Length', value: `${length} characters`, inline: true },
+                { name: '🛡️ Strength', value: length >= 16 ? 'Very Strong' : length >= 12 ? 'Strong' : 'Medium', inline: true }
+            )
+            .setColor('#FF6B35')
+            .setFooter({ text: '⚠️ Delete this message after copying' })
             .setTimestamp();
-        
-        try {
-            await message.author.send({ embeds: [embed] });
-            message.reply('🔐 Password sent to your DMs for security!');
-        } catch {
-            message.reply({ embeds: [embed] });
-        }
+
+        message.reply({ embeds: [embed] });
     }
 };

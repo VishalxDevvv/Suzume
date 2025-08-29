@@ -4,6 +4,7 @@ const LevelSystem = require('./levelSystem');
 const { RoyalStyler, ROYAL_COLORS, ROYAL_EMOJIS } = require('./royalStyles');
 const CustomEmojiManager = require('./customEmojis');
 const EmojiFun = require('./emojiFeatures');
+const ServerConfig = require('./serverConfig');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
@@ -78,37 +79,6 @@ const shipMessages = {
     90: "💯 Absolutely perfect!",
     100: "🔥💕 ULTIMATE LOVE MATCH! 💕🔥"
 };
-
-// XP System
-const levelsFile = './data/levels.json';
-
-function loadLevels() {
-    if (!fs.existsSync('./data')) fs.mkdirSync('./data');
-    if (!fs.existsSync(levelsFile)) fs.writeFileSync(levelsFile, '{}');
-    return JSON.parse(fs.readFileSync(levelsFile));
-}
-
-function saveLevels(data) {
-    fs.writeFileSync(levelsFile, JSON.stringify(data, null, 2));
-}
-
-function addXP(userId, username) {
-    const levels = loadLevels();
-    if (!levels[userId]) levels[userId] = { xp: 0, level: 1 };
-    
-    levels[userId].xp += Math.floor(Math.random() * 15) + 5; // 5-20 XP per message
-    const xpNeeded = levels[userId].level * 100;
-    
-    if (levels[userId].xp >= xpNeeded) {
-        levels[userId].level++;
-        levels[userId].xp = 0;
-        saveLevels(levels);
-        return levels[userId].level; // Return new level for level up message
-    }
-    
-    saveLevels(levels);
-    return null;
-}
 
 // Function to calculate ship percentage
 function calculateShipPercentage(name1, name2) {
@@ -239,15 +209,33 @@ client.on(Events.MessageCreate, async message => {
 
     // XP System - Add XP for every message (not commands)
     if (!message.content.startsWith(PREFIX) && !message.author.bot) {
-        const newLevel = addXP(message.author.id, message.author.username);
-        if (newLevel) {
-            const levelUpEmbed = RoyalStyler.createRoyalEmbed({
-                title: `${ROYAL_EMOJIS.XP} Level Up!`,
-                description: `${ROYAL_EMOJIS.SUCCESS} **${message.author.username}** reached level **${newLevel}**!`,
-                color: ROYAL_COLORS.GOLD,
-                thumbnail: message.author.displayAvatarURL()
-            });
-            message.reply({ embeds: [levelUpEmbed] });
+        const settings = ServerConfig.getSettings(message.guild.id);
+        
+        // Check if levels are enabled for this server
+        if (settings.level_enabled !== 0) {
+            const result = await LevelSystem.processMessage(message);
+            if (result && result.leveledUp) {
+                const levelMessage = (settings.level_message || '{user} reached level {level}!')
+                    .replace('{user}', message.author.username)
+                    .replace('{level}', result.newLevel);
+                
+                const levelUpEmbed = RoyalStyler.createRoyalEmbed({
+                    title: `${ROYAL_EMOJIS.XP} Level Up!`,
+                    description: `${ROYAL_EMOJIS.SUCCESS} ${levelMessage}`,
+                    color: ROYAL_COLORS.GOLD,
+                    thumbnail: message.author.displayAvatarURL()
+                });
+                
+                // Send to configured level channel or current channel
+                const levelChannel = settings.level_channel ? 
+                    message.guild.channels.cache.get(settings.level_channel) : message.channel;
+                
+                if (levelChannel) {
+                    levelChannel.send({ embeds: [levelUpEmbed] });
+                } else {
+                    message.reply({ embeds: [levelUpEmbed] });
+                }
+            }
         }
     }
 
@@ -1883,6 +1871,64 @@ client.on(Events.InteractionCreate, async interaction => {
     } catch (error) {
         console.error('Button interaction error:', error);
         await interaction.reply({ content: 'Failed to fetch new question!', ephemeral: true });
+    }
+});
+
+// Welcome new members
+client.on(Events.GuildMemberAdd, async (member) => {
+    const settings = ServerConfig.getSettings(member.guild.id);
+    
+    if (settings.welcome_channel) {
+        const channel = member.guild.channels.cache.get(settings.welcome_channel);
+        if (channel) {
+            const message = (settings.welcome_message || 'Welcome {user} to {server}!')
+                .replace('{user}', member.toString())
+                .replace('{server}', member.guild.name);
+            
+            const embed = new EmbedBuilder()
+                .setTitle(`${ROYAL_EMOJIS.WELCOME} Welcome to the Kingdom!`)
+                .setColor(ROYAL_COLORS.EMERALD)
+                .setDescription(message)
+                .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
+                .addFields(
+                    { name: '👤 Member', value: member.user.tag, inline: true },
+                    { name: '📅 Account Created', value: `<t:${Math.floor(member.user.createdTimestamp / 1000)}:R>`, inline: true },
+                    { name: '👥 Member Count', value: member.guild.memberCount.toString(), inline: true }
+                )
+                .setFooter({ text: '© Vishal\'s Royal Bot • Welcome to our community!' })
+                .setTimestamp();
+            
+            channel.send({ embeds: [embed] });
+        }
+    }
+});
+
+// Goodbye to leaving members
+client.on(Events.GuildMemberRemove, async (member) => {
+    const settings = ServerConfig.getSettings(member.guild.id);
+    
+    if (settings.goodbye_channel) {
+        const channel = member.guild.channels.cache.get(settings.goodbye_channel);
+        if (channel) {
+            const message = (settings.goodbye_message || 'Goodbye {user}!')
+                .replace('{user}', member.user.tag)
+                .replace('{server}', member.guild.name);
+            
+            const embed = new EmbedBuilder()
+                .setTitle(`${ROYAL_EMOJIS.LOADING} Farewell`)
+                .setColor(ROYAL_COLORS.BURGUNDY)
+                .setDescription(message)
+                .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
+                .addFields(
+                    { name: '👤 Member', value: member.user.tag, inline: true },
+                    { name: '📅 Joined', value: member.joinedAt ? `<t:${Math.floor(member.joinedTimestamp / 1000)}:R>` : 'Unknown', inline: true },
+                    { name: '👥 Members Left', value: member.guild.memberCount.toString(), inline: true }
+                )
+                .setFooter({ text: '© Vishal\'s Royal Bot • Until we meet again' })
+                .setTimestamp();
+            
+            channel.send({ embeds: [embed] });
+        }
     }
 });
 

@@ -1,37 +1,31 @@
 const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
-    name: 'bite',
-    description: 'Bite someone',
+    name: 'kiss',
+    description: 'Kiss someone',
     async execute(message, args) {
         const target = message.mentions.users.first();
         
         try {
-            // Try multiple endpoints as bite might not exist
-            let response = await fetch('https://nekos.life/api/v2/img/bite');
-            if (!response.ok || response.headers.get('content-type')?.includes('text/html')) {
-                // Fallback to a similar action
-                response = await fetch('https://nekos.life/api/v2/img/kiss');
-            }
-            
+            const response = await fetch('https://nekos.life/api/v2/img/kiss');
             const data = await response.json();
             
             const embed = new EmbedBuilder()
-                .setTitle('🦷 Bite!')
-                .setDescription(target ? `${message.author} bites ${target}!` : `${message.author} bites the air!`)
+                .setTitle('💋 Kiss!')
+                .setDescription(target ? `${message.author} kisses ${target}! 💕` : `${message.author} blows a kiss! 💋`)
                 .setImage(data.url)
-                .setColor('#8B4513')
+                .setColor('#FF69B4')
                 .setTimestamp();
             
             message.reply({ embeds: [embed] });
         } catch (error) {
-            console.error('Bite API error:', error);
+            console.error('Kiss API error:', error);
             
             // Fallback embed without image
             const embed = new EmbedBuilder()
-                .setTitle('🦷 Bite!')
-                .setDescription(target ? `${message.author} bites ${target}! *chomp chomp* 🦷` : `${message.author} bites the air! *chomp chomp* 🦷`)
-                .setColor('#8B4513')
+                .setTitle('💋 Kiss!')
+                .setDescription(target ? `${message.author} kisses ${target}! 💕` : `${message.author} blows a kiss! 💋`)
+                .setColor('#FF69B4')
                 .setTimestamp();
             
             message.reply({ embeds: [embed] });
