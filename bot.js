@@ -1,3 +1,11 @@
+// --- Keep Render happy with a fake web server ---
+const express = require("express");
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.get("/", (req, res) => res.send("✅ Bot is running and keeping Render alive!"));
+app.listen(PORT, () => console.log(`🌐 Listening on port ${PORT}`));
+// hehe
 const { Client, GatewayIntentBits, Events, Collection, EmbedBuilder, PermissionsBitField, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } = require('discord.js');
 const Database = require('./database');
 const LevelSystem = require('./levelSystem');
