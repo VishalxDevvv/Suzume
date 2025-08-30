@@ -7,7 +7,7 @@ module.exports = {
         const target = message.mentions.users.first();
         
         try {
-            const response = await fetch('https://nekos.life/api/v2/img/poke');
+            const response = await fetch('https://api.waifu.pics/sfw/poke');
             const data = await response.json();
             
             const embed = new EmbedBuilder()

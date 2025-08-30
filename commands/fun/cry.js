@@ -5,10 +5,10 @@ module.exports = {
     description: 'Show crying emotion',
     async execute(message, args) {
         try {
-            let response = await fetch('https://nekos.life/api/v2/img/cry');
+            let response = await fetch('https://api.waifu.pics/sfw/cry');
             if (!response.ok || response.headers.get('content-type')?.includes('text/html')) {
                 // Use hug as fallback for cry (more appropriate)
-                response = await fetch('https://nekos.life/api/v2/img/hug');
+                response = await fetch('https://api.waifu.pics/sfw/cry');
             }
             
             const data = await response.json();

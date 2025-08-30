@@ -6,9 +6,9 @@ module.exports = {
     description: 'Show laughing emotion',
     async execute(message, args) {
         try {
-            let response = await fetch('https://nekos.life/api/v2/img/laugh');
+            let response = await fetch('https://api.waifu.pics/sfw/laugh');
             if (!response.ok || response.headers.get('content-type')?.includes('text/html')) {
-                response = await fetch('https://nekos.life/api/v2/img/pat');
+                response = await fetch('https://api.waifu.pics/sfw/pat');
             }
             
             const data = await response.json();

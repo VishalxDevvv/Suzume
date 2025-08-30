@@ -7,9 +7,9 @@ module.exports = {
         const target = message.mentions.users.first();
         
         try {
-            let response = await fetch('https://nekos.life/api/v2/img/tickle');
+            let response = await fetch('https://api.waifu.pics/sfw/waifu');
             if (!response.ok || response.headers.get('content-type')?.includes('text/html')) {
-                response = await fetch('https://nekos.life/api/v2/img/pat');
+                response = await fetch('https://api.waifu.pics/sfw/waifu');
             }
             
             const data = await response.json();

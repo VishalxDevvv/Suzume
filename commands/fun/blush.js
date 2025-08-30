@@ -6,10 +6,10 @@ module.exports = {
     async execute(message, args) {
         try {
             // Try multiple endpoints as blush might not exist
-            let response = await fetch('https://nekos.life/api/v2/img/blush');
+            let response = await fetch('https://api.waifu.pics/sfw/blush');
             if (!response.ok || response.headers.get('content-type')?.includes('text/html')) {
                 // Use kiss as fallback for blush (both are cute/romantic)
-                response = await fetch('https://nekos.life/api/v2/img/kiss');
+                response = await fetch('https://api.waifu.pics/sfw/blush');
             }
             
             const data = await response.json();

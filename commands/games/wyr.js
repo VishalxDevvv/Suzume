@@ -9,7 +9,7 @@ module.exports = {
             const data = await response.json();
             
             const embed = new EmbedBuilder()
-                .setTitle('🤷 Would You Rather')
+                .setTitle('  Would You Rather')
                 .setDescription(data.question)
                 .setColor('#9932CC')
                 .setTimestamp();
