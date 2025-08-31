@@ -22,7 +22,7 @@ module.exports = {
             const definition = meaning.definitions[0];
 
             const embed = new EmbedBuilder()
-                .setTitle(`📚 ${entry.word}`)
+                .setTitle(`${entry.word}`)
                 .setDescription(`**${meaning.partOfSpeech}**\n\n${definition.definition}`)
                 .setColor('#4ade80')
                 .setFooter({ text: 'Dictionary API' })
@@ -33,7 +33,7 @@ module.exports = {
             }
 
             if (entry.phonetics && entry.phonetics[0] && entry.phonetics[0].text) {
-                embed.addFields({ name: '🔊 Pronunciation', value: entry.phonetics[0].text, inline: true });
+                embed.addFields({ name: 'Pronunciation', value: entry.phonetics[0].text, inline: true });
             }
 
             message.reply({ embeds: [embed] });

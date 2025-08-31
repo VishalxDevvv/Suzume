@@ -20,7 +20,7 @@ module.exports = {
                     .setTitle('✅ Security Status: CLEAN')
                     .setDescription(`Email \`${email}\` was not found in any known data breaches`)
                     .setColor('#00FF00')
-                    .setFooter({ text: '🛡️ Stay vigilant and use strong passwords' })
+                    .setFooter({ text: 'Stay vigilant and use strong passwords' })
                     .setTimestamp();
                 
                 return message.reply({ embeds: [embed] });
@@ -29,13 +29,13 @@ module.exports = {
             const breaches = await response.json();
             
             const embed = new EmbedBuilder()
-                .setTitle('⚠️ Security Alert: COMPROMISED')
+                .setTitle('Security Alert: COMPROMISED')
                 .setDescription(`Email found in **${breaches.length}** data breach(es)`)
                 .addFields(
-                    { name: '🚨 Recent Breaches', value: breaches.slice(0, 5).map(b => `• ${b.Name} (${b.BreachDate})`).join('\n') || 'None', inline: false }
+                    { name: 'Recent Breaches', value: breaches.slice(0, 5).map(b => `• ${b.Name} (${b.BreachDate})`).join('\n') || 'None', inline: false }
                 )
                 .setColor('#FF0000')
-                .setFooter({ text: '🔒 Change passwords immediately' })
+                .setFooter({ text: 'Change passwords immediately' })
                 .setTimestamp();
 
             message.reply({ embeds: [embed] });

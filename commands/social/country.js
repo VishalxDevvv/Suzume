@@ -20,16 +20,16 @@ module.exports = {
             const info = data[0];
 
             const embed = new EmbedBuilder()
-                .setTitle(`🌍 ${info.name.common}`)
+                .setTitle(`${info.name.common}`)
                 .setThumbnail(info.flags.png)
                 .setColor('#3b82f6')
                 .addFields(
-                    { name: '🏛️ Capital', value: info.capital ? info.capital[0] : 'N/A', inline: true },
-                    { name: '👥 Population', value: info.population.toLocaleString(), inline: true },
-                    { name: '🗺️ Region', value: info.region, inline: true },
-                    { name: '💰 Currency', value: info.currencies ? Object.values(info.currencies)[0].name : 'N/A', inline: true },
-                    { name: '🗣️ Languages', value: info.languages ? Object.values(info.languages).join(', ') : 'N/A', inline: true },
-                    { name: '📍 Area', value: `${info.area.toLocaleString()} km²`, inline: true }
+                    { name: ' Capital', value: info.capital ? info.capital[0] : 'N/A', inline: true },
+                    { name: ' Population', value: info.population.toLocaleString(), inline: true },
+                    { name: ' Region', value: info.region, inline: true },
+                    { name: ' Currency', value: info.currencies ? Object.values(info.currencies)[0].name : 'N/A', inline: true },
+                    { name: ' Languages', value: info.languages ? Object.values(info.languages).join(', ') : 'N/A', inline: true },
+                    { name: ' Area', value: `${info.area.toLocaleString()} km²`, inline: true }
                 )
                 .setFooter({ text: 'REST Countries API' })
                 .setTimestamp();

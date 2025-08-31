@@ -7,11 +7,11 @@ module.exports = {
         const target = message.mentions.users.first();
         
         try {
-            const response = await fetch('https://api.waifu.pics/sfw/kiss');
+            const response = await fetch('https://api.waifu.pics/sfw/bite');
             const data = await response.json();
             
             const embed = new EmbedBuilder()
-                .setTitle('💋 Kiss!')
+                .setTitle(' bite!')
                 .setDescription(target ? `${message.author} kisses ${target}! 💕` : `${message.author} blows a kiss! 💋`)
                 .setImage(data.url)
                 .setColor('#FF69B4')
@@ -19,12 +19,12 @@ module.exports = {
             
             message.reply({ embeds: [embed] });
         } catch (error) {
-            console.error('Kiss API error:', error);
+            console.error('bite API error:', error);
             
             // Fallback embed without image
             const embed = new EmbedBuilder()
-                .setTitle('💋 Kiss!')
-                .setDescription(target ? `${message.author} kisses ${target}! 💕` : `${message.author} blows a kiss! 💋`)
+                .setTitle('bite!')
+                .setDescription(target ? `${message.author} bites ${target}!` : `${message.author}`)
                 .setColor('#FF69B4')
                 .setTimestamp();
             

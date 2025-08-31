@@ -6,7 +6,7 @@ module.exports = {
     description: 'Get NASA Picture of the Day',
     async execute(message, args) {
         try {
-            const response = await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');
+            const response = await fetch('https://api.nasa.gov/planetary/apod?api_key=EY23c36wswPQuOa7Ruz5R6tsk74nPoq5fUh2u9XL');
             const data = await response.json();
 
             const embed = RoyalStyler.createRoyalEmbed({

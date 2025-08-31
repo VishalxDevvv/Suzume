@@ -15,7 +15,7 @@ module.exports = {
             const data = await response.json();
             
             const embed = new EmbedBuilder()
-                .setTitle('ROYAL_EMOJIS.HELLO Wave!')
+                .setTitle(' Wave!')
                 .setDescription(target ? `${message.author} waves at ${target}!` : `${message.author} waves hello!`)
                 .setImage(data.url)
                 .setColor('#00CED1')
