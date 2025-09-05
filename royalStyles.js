@@ -15,55 +15,63 @@ const ROYAL_COLORS = {
 
 // Royal emojis and symbols
 const ROYAL_EMOJIS = {
-    CROWN: '<:Crown:1410661464968003765>',
-    DIAMOND: '<:idk:1410664936421720155>',
-    STAR: '<:xp:1410668005410472108>',
-    SPARKLES: '✨',
-    CRYSTAL: '<:expect:1410934501927948368>',
-    SCROLL: '<:expect:1410934501927948368>',
-    SHIELD: '🛡️',
-    SWORD: '⚔️',
-    CASTLE: '🏰',
-    ROYAL_SCEPTER: '🪄',
-    GEM: '💍',
-    GOLDEN_HEART: '💛',
-    PURPLE_HEART: '💜',
-    // Custom bot emojis
-    CUTE: '<:Cute:1410642536003010741>',
-    LAUGH: '<:laugh:1410669658276757584>',
-    LOVE: '<:love:1410636588173492314>',
-    WARNING: '<:warning:1410636131049017484>',
-    INFO: '<:info:1410635141155524758>',
-    LOADING: '<:loading:1410634302789648414>',
-    ERROR: '<:error:1410633873104179402>',
-    SUCCESS: '<a:success:1410633387751768268>',
-    WELCOME: '<a:welcome:1410218072320507904>',
-    FANCY_DIVIDER: '<:divider:1410660936154484737><:divider:1410660936154484737><:divider:1410660936154484737><:divider:1410660936154484737><:divider:1410660936154484737><:divider:1410660936154484737><:divider:1410660936154484737><:divider:1410660936154484737><:divider:1410660936154484737><:divider:1410660936154484737>',
-    HELLO: '<:hello:1410217672834289704>',
-    ROCKET: '<:letsgo:1410665838373244948>',
-    STATS: '<:stats:1410667741819437077>',
-    BULB: '<:xp:1410668005410472108>',
-    XP: '<:xp:1410668005410472108>',
-    MOVIE: '<a:movie:1410668904547745994>',
-    ENTERTAINMENT: '<:Entertainment:1410669329032155138>',
-    VISUAL: '<:visualandimage:1410670327251599360>',
-    CRYPTO: '<:crypto_parrot1:1410670803523207249>',
-    API: '<:api:1410691668440776839>',
-    UTILITY: '<:need:1410692027665879162>',
-    GAMES: '<:fun:1410692368734359613>',
-    MODERATION: '<:PARAS:1410692729675190384>',
-    SOCIAL: '<:anime:1410692893785460846>',
-    CATEGORY: '<:category:1410693212258963578>',
-    BLUE_HEART: '💙',
-    FLEUR_DE_LIS: '⚜️',
-    ORNAMENT: '🔸',
-    ROYAL_BANNER: '🚩'
+    HEART1: "<:heart1:1412154093215944828>",
+    CASH: "<a:cash:1412109414516789380>",
+    TAILS: "<:tails:1412096419086598266>",
+    HEADS: "<:heads:1412096299788009542>",
+    FLIP_COIN: "<a:flip_coin:1412095517185278032>",
+    FIRE: "<a:Fire:1412016237692588122>",
+    TARGET: "<a:target:1412016076040175666>",
+    HELLO: "<a:hello:1412015673877598319>",
+    STATUS_IDLE: "<a:status_idle:1412015368096190515>",
+    STATUS_ONLINE: "<a:status_online:1412015257039409184>",
+    STATUS_OFFLINE: "<a:status_offline:1412015239742099456>",
+    SETTINGS: "<a:settings:1412014909704896603>",
+    TOOLS: "<a:tools:1412014731283398656>",
+    TAG: "<:tag:1412014490794463354>",
+    USER: "<:User:1412013899435474996>",
+    NETWORK: "<a:network:1412013628693020775>",
+    PING: "<a:Ping:1412013428121534475>",
+    TIME: "<a:time:1412013235837603974>",
+    LIBRARY: "<:Library:1412013054702653461>",
+    INFO: "<a:info:1412012918320664646>",
+    HEART: "<:heart:1412007203728265239>",
+    CASTLE: "<a:castle:1412006452259983422>",
+    SWORD: "<a:sword:1412006288640184411>",
+    SHIELD: "<a:Shield:1412005769590739004>",
+    SCROLL: "<a:scroll:1412005307218919424>",
+    CRYSTALS: "<:crystals:1412004976288337920>",
+    SPARKLES: "<a:sparkles:1412004805517381732>",
+    STAR: "<a:star:1412004524964581427>",
+    DIAMOND: "<a:Diamond:1412004332487835708>",
+    LAUGH: "<a:laugh:1412004016103227392>",
+    CUTE: "<a:cute:1412003781603754005>",
+    ERROR: "<a:ninja_fail_error:1412003583112642590>",
+    SUCCESS: "<a:success:1412003378455642134>",
+    WELCOME: "<a:Welcome:1412003040395006063>",
+    CROWN: "👑",
+    CRYSTAL: "💎",
+    GEM: "💍",
+    GOLDEN_HEART: "💛",
+    PURPLE_HEART: "💜",
+    BOW_DIVIDER: "<:bow_divider:1413228013826478132>",
+    BLACK_DIVIDER: "<:black_divider:1413227997208776895>",
+    DIVIDE: "<a:divide:1413227844384985139>",
+    FANCY_DIVIDER: "<:bow_divider:1413228013826478132><:black_divider:1413227997208776895><a:divide:1413227844384985139>",
+    ROCKET: "<a:Fire:1412016237692588122>",
+    STATS: "<a:Diamond:1412004332487835708>",
+    BULB: "<a:star:1412004524964581427>",
+    CATEGORY: "<a:settings:1412014909704896603>",
 };
 
 // Royal decorative elements
 const DECORATIONS = {
     DIVIDER: '═══════════════════════════════',
-    FANCY_DIVIDER: '<:divider:1410660936154484737><:divider:1410660936154484737><:divider:1410660936154484737><:divider:1410660936154484737><:divider:1410660936154484737><:divider:1410660936154484737><:divider:1410660936154484737><:divider:1410660936154484737><:divider:1410660936154484737><:divider:1410660936154484737>',
+    FANCY_DIVIDER: '<:bow_divider:1413228013826478132><:black_divider:1413227997208776895><a:divide:1413227844384985139>',
+    ROCKET: "<a:Fire:1412016237692588122>",
+    STATS: "<a:Diamond:1412004332487835708>",
+    BULB: "<a:star:1412004524964581427>",
+    CATEGORY: "<a:settings:1412014909704896603>",
     BORDER_TOP: '╔═══════════════════════════════╗',
     BORDER_BOTTOM: '╚═══════════════════════════════╝',
     BULLET: '◆',
@@ -135,11 +143,11 @@ class RoyalStyler {
     static createRoyalHelp(prefix) {
         return this.createRoyalEmbed({
             title: `${ROYAL_EMOJIS.CROWN} I'm Suzume🎀 ${ROYAL_EMOJIS.CROWN}`,
-            description: `${ROYAL_EMOJIS.FANCY_DIVIDER}\n**${ROYAL_EMOJIS.ROCKET} Get Started**\n**Current Prefix:** \`${prefix}\`\n**Change Prefix:** \`${prefix}prefix <new prefix>\` (Admin only)\n\n${ROYAL_EMOJIS.CATEGORY} **Use menu below to view commands**\n${ROYAL_EMOJIS.FANCY_DIVIDER}`,
+            description: `${ROYAL_EMOJIS.FANCY_DIVIDER}\n**${ROYAL_EMOJIS.FIRE} Get Started**\n**Current Prefix:** \`${prefix}\`\n**Change Prefix:** \`${prefix}prefix <new prefix>\` (Admin only)\n\n${ROYAL_EMOJIS.CATEGORY} **Use menu below to view commands**\n${ROYAL_EMOJIS.FANCY_DIVIDER}`,
             color: ROYAL_COLORS.GOLD,
             fields: [
                 {
-                    name: `${ROYAL_EMOJIS.DIAMOND} ${ROYAL_EMOJIS.STATS} Bot Statistics`,
+                    name: `${ROYAL_EMOJIS.DIAMOND} ${ROYAL_EMOJIS.DIAMOND} Bot Statistics`,
                     value: `**Total Commands:** 50+ | **Slash Commands:** 49\n**Categories:** 5 | **APIs:** 25+`,
                     inline: false
                 },
@@ -149,7 +157,7 @@ class RoyalStyler {
                     inline: false
                 },
                 {
-                    name: `${ROYAL_EMOJIS.DIAMOND} ${ROYAL_EMOJIS.BULB} Quick Tips`,
+                    name: `${ROYAL_EMOJIS.DIAMOND} ${ROYAL_EMOJIS.STAR} Quick Tips`,
                     value: `• Both \`${prefix}\` and \`/\` commands work\n• Commands work in DMs too!\n• Use buttons below for categories\n• Try \`${prefix}invite\` to add me to other servers`,
                     inline: false
                 }
@@ -162,7 +170,7 @@ class RoyalStyler {
 
     static createApiHelp(prefix) {
         return this.createRoyalEmbed({
-            title: `${ROYAL_EMOJIS.ROCKET} API Commands ${ROYAL_EMOJIS.ROCKET}`,
+            title: `${ROYAL_EMOJIS.FIRE} API Commands ${ROYAL_EMOJIS.FIRE}`,
             description: `${ROYAL_EMOJIS.FANCY_DIVIDER}\nCommands powered by external APIs\n${ROYAL_EMOJIS.FANCY_DIVIDER}`,
             color: ROYAL_COLORS.ROYAL_BLUE,
             fields: [
@@ -197,12 +205,12 @@ class RoyalStyler {
 
     static createUtilityHelp(prefix) {
         return this.createRoyalEmbed({
-            title: `${ROYAL_EMOJIS.STATS} Utility Commands ${ROYAL_EMOJIS.STATS}`,
+            title: `${ROYAL_EMOJIS.DIAMOND} Utility Commands ${ROYAL_EMOJIS.DIAMOND}`,
             description: `${ROYAL_EMOJIS.FANCY_DIVIDER}\nHelpful tools and utilities\n${ROYAL_EMOJIS.FANCY_DIVIDER}`,
             color: ROYAL_COLORS.EMERALD,
             fields: [
                 {
-                    name: `${ROYAL_EMOJIS.DIAMOND} ${ROYAL_EMOJIS.BULB} Text & Encoding`,
+                    name: `${ROYAL_EMOJIS.DIAMOND} ${ROYAL_EMOJIS.STAR} Text & Encoding`,
                     value: `\`${prefix}base64 <encode/decode> <text>\` - Base64 encoder/decoder\n\`${prefix}password [length]\` - Generate secure passwords\n\`${prefix}urban <term>\` - Urban Dictionary lookup`,
                     inline: false
                 },
@@ -278,7 +286,7 @@ class RoyalStyler {
             fields: [
                 {
                     name: `${ROYAL_EMOJIS.DIAMOND} Party Games`,
-                    value: `${ROYAL_EMOJIS.BULB} \`${prefix}truth\` - Truth questions\n${ROYAL_EMOJIS.LAUGH} \`${prefix}dare\` - Dare challenges\n${ROYAL_EMOJIS.BULB} \`${prefix}wyr\` - Would you rather\n${ROYAL_EMOJIS.LAUGH} \`${prefix}nhie\` - Never have I ever`,
+                    value: `${ROYAL_EMOJIS.STAR} \`${prefix}truth\` - Truth questions\n${ROYAL_EMOJIS.LAUGH} \`${prefix}dare\` - Dare challenges\n${ROYAL_EMOJIS.STAR} \`${prefix}wyr\` - Would you rather\n${ROYAL_EMOJIS.LAUGH} \`${prefix}nhie\` - Never have I ever`,
                     inline: false
                 },
                 {

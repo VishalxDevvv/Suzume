@@ -6,6 +6,17 @@ const PORT = process.env.PORT || 3000;
 app.get("/", (req, res) => res.send("✅ Bot is running and keeping Render alive!"));
 app.listen(PORT, () => console.log(`🌐 Listening on port ${PORT}`));
 // hehe
+// Global error handlers
+process.on('unhandledRejection', (reason, promise) => {
+    console.log('Unhandled Rejection at:', promise, 'reason:', reason);
+    // Don't exit the process, just log the error
+});
+
+process.on('uncaughtException', (error) => {
+    console.log('Uncaught Exception:', error);
+    // Don't exit the process, just log the error
+});
+
 const { Client, GatewayIntentBits, Events, Collection, EmbedBuilder, PermissionsBitField, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } = require('discord.js');
 const Database = require('./database');
 const LevelSystem = require('./levelSystem');
@@ -221,7 +232,7 @@ client.on(Events.MessageCreate, async message => {
         
         // Check if levels are enabled for this server
         if (settings.level_enabled !== 0) {
-            const result = await LevelSystem.processMessage(message);
+            const result = await levelSystem.processMessage(message);
             if (result && result.leveledUp) {
                 const levelMessage = (settings.level_message || '{user} reached level {level}!')
                     .replace('{user}', message.author.username)
@@ -239,11 +250,41 @@ client.on(Events.MessageCreate, async message => {
                     message.guild.channels.cache.get(settings.level_channel) : message.channel;
                 
                 if (levelChannel) {
-                    levelChannel.send({ embeds: [levelUpEmbed] });
+                    try {
+                        await levelChannel.send({ embeds: [levelUpEmbed] });
+                    } catch (error) {
+                        // If can't send to level channel, try replying to user
+                        try {
+                            await message.reply({ embeds: [levelUpEmbed] });
+                        } catch (replyError) {
+                            console.log('Cannot send level up message - missing permissions');
+                        }
+                    }
                 } else {
-                    message.reply({ embeds: [levelUpEmbed] });
+                    try {
+                        await message.reply({ embeds: [levelUpEmbed] });
+                    } catch (error) {
+                        console.log('Cannot send level up message - missing permissions');
+                    }
                 }
             }
+        }
+    }
+
+    // Check for sz commands without prefix first
+    const messageContent = message.content.trim();
+    const firstWord = messageContent.split(' ')[0].toLowerCase();
+    
+    if (firstWord === 'sz' || firstWord === 'suzu') {
+        const args = messageContent.split(' ').slice(1);
+        try {
+            const suzuCommand = require('./commands/economy/suzu.js');
+            await suzuCommand.execute(message, args);
+            return;
+        } catch (error) {
+            console.error('Suzu command error:', error);
+            message.reply('❌ Error executing suzu command.');
+            return;
         }
     }
 
@@ -765,8 +806,8 @@ client.on(Events.MessageCreate, async message => {
                 return message.reply({ embeds: [noStatsEmbed] });
             }
 
-            const levelCard = RoyalStyler.createRoyalLevelCard(targetMember, stats);
-            message.reply({ embeds: [levelCard] });
+            const levelCard = await levelSystem.createLevelCard(targetMember, stats);
+            message.reply(levelCard);
         } catch (error) {
             console.error('Error getting user stats:', error);
             message.reply('❌ An error occurred while fetching level data.');
@@ -775,8 +816,8 @@ client.on(Events.MessageCreate, async message => {
 
     else if (command === 'leaderboard' || command === 'lb') {
         try {
-            const leaderboardEmbed = await levelSystem.createLeaderboard(message.guild, 10);
-            message.reply({ embeds: [leaderboardEmbed] });
+            const result = await levelSystem.createLeaderboard(message.guild, 10, 1);
+            message.reply({ embeds: [result.embed], components: result.components });
         } catch (error) {
             console.error('Error creating leaderboard:', error);
             message.reply('❌ An error occurred while fetching leaderboard data.');
@@ -1104,6 +1145,17 @@ client.on(Events.MessageCreate, async message => {
         message.reply({ embeds: [randomEmojiEmbed] });
     }
 
+    // Economy Commands (suzu/sz)
+    else if (command === 'suzu' || command === 'sz') {
+        try {
+            const suzuCommand = require('./commands/economy/suzu.js');
+            await suzuCommand.execute(message, args);
+        } catch (error) {
+            console.error('Suzu command error:', error);
+            message.reply('❌ Error executing suzu command.');
+        }
+    }
+
     // Unknown command
     else {
         message.reply(`❌ Unknown command: \`${PREFIX}${command}\`\nUse \`${PREFIX}help\` to see all available commands.`);
@@ -1153,7 +1205,7 @@ client.on(Events.InteractionCreate, async interaction => {
             return;
         } catch (error) {
             console.error('Slash command execution error:', error);
-            const errorMsg = { content: 'There was an error executing that command!', ephemeral: true };
+            const errorMsg = { content: 'There was an error executing that command!', flags: 64 };
             if (interaction.replied || interaction.deferred) {
                 await interaction.followUp(errorMsg);
             } else {
@@ -1210,7 +1262,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
     else if (commandName === 'ban') {
         if (!interaction.member.permissions.has(PermissionsBitField.Flags.BanMembers)) {
-            return await interaction.reply({ content: '❌ You need the "Ban Members" permission to use this command.', ephemeral: true });
+            return await interaction.reply({ content: '❌ You need the "Ban Members" permission to use this command.', flags: 64 });
         }
 
         const user = interaction.options.getUser('user');
@@ -1231,13 +1283,13 @@ client.on(Events.InteractionCreate, async interaction => {
 
             await interaction.reply({ embeds: [banEmbed] });
         } catch (error) {
-            await interaction.reply({ content: '❌ Failed to ban user. Make sure I have permission and the user is bannable.', ephemeral: true });
+            await interaction.reply({ content: '❌ Failed to ban user. Make sure I have permission and the user is bannable.', flags: 64 });
         }
     }
 
     else if (commandName === 'unban') {
         if (!interaction.member.permissions.has(PermissionsBitField.Flags.BanMembers)) {
-            return await interaction.reply({ content: '❌ You need the "Ban Members" permission to use this command.', ephemeral: true });
+            return await interaction.reply({ content: '❌ You need the "Ban Members" permission to use this command.', flags: 64 });
         }
 
         const userId = interaction.options.getString('userid');
@@ -1256,13 +1308,13 @@ client.on(Events.InteractionCreate, async interaction => {
 
             await interaction.reply({ embeds: [unbanEmbed] });
         } catch (error) {
-            await interaction.reply({ content: '❌ Failed to unban user. Make sure the user ID is correct and they are banned.', ephemeral: true });
+            await interaction.reply({ content: '❌ Failed to unban user. Make sure the user ID is correct and they are banned.', flags: 64 });
         }
     }
 
     else if (commandName === 'kick') {
         if (!interaction.member.permissions.has(PermissionsBitField.Flags.KickMembers)) {
-            return await interaction.reply({ content: '❌ You need the "Kick Members" permission to use this command.', ephemeral: true });
+            return await interaction.reply({ content: '❌ You need the "Kick Members" permission to use this command.', flags: 64 });
         }
 
         const user = interaction.options.getUser('user');
@@ -1270,7 +1322,7 @@ client.on(Events.InteractionCreate, async interaction => {
         const reason = interaction.options.getString('reason') || 'No reason provided';
         
         if (!member) {
-            return await interaction.reply({ content: '❌ User not found in this server.', ephemeral: true });
+            return await interaction.reply({ content: '❌ User not found in this server.', flags: 64 });
         }
 
         try {
@@ -1288,13 +1340,13 @@ client.on(Events.InteractionCreate, async interaction => {
 
             await interaction.reply({ embeds: [kickEmbed] });
         } catch (error) {
-            await interaction.reply({ content: '❌ Failed to kick user. Make sure I have permission and the user is kickable.', ephemeral: true });
+            await interaction.reply({ content: '❌ Failed to kick user. Make sure I have permission and the user is kickable.', flags: 64 });
         }
     }
 
     else if (commandName === 'timeout') {
         if (!interaction.member.permissions.has(PermissionsBitField.Flags.ModerateMembers)) {
-            return await interaction.reply({ content: '❌ You need the "Timeout Members" permission to use this command.', ephemeral: true });
+            return await interaction.reply({ content: '❌ You need the "Timeout Members" permission to use this command.', flags: 64 });
         }
 
         const user = interaction.options.getUser('user');
@@ -1303,7 +1355,7 @@ client.on(Events.InteractionCreate, async interaction => {
         const reason = interaction.options.getString('reason') || 'No reason provided';
         
         if (!member) {
-            return await interaction.reply({ content: '❌ User not found in this server.', ephemeral: true });
+            return await interaction.reply({ content: '❌ User not found in this server.', flags: 64 });
         }
 
         const duration = parseTime(durationStr);
@@ -1324,20 +1376,20 @@ client.on(Events.InteractionCreate, async interaction => {
 
             await interaction.reply({ embeds: [timeoutEmbed] });
         } catch (error) {
-            await interaction.reply({ content: '❌ Failed to timeout user. Make sure I have permission and the duration is valid (max 28 days).', ephemeral: true });
+            await interaction.reply({ content: '❌ Failed to timeout user. Make sure I have permission and the duration is valid (max 28 days).', flags: 64 });
         }
     }
 
     else if (commandName === 'untimeout') {
         if (!interaction.member.permissions.has(PermissionsBitField.Flags.ModerateMembers)) {
-            return await interaction.reply({ content: '❌ You need the "Timeout Members" permission to use this command.', ephemeral: true });
+            return await interaction.reply({ content: '❌ You need the "Timeout Members" permission to use this command.', flags: 64 });
         }
 
         const user = interaction.options.getUser('user');
         const member = interaction.guild.members.cache.get(user.id);
         
         if (!member) {
-            return await interaction.reply({ content: '❌ User not found in this server.', ephemeral: true });
+            return await interaction.reply({ content: '❌ User not found in this server.', flags: 64 });
         }
 
         try {
@@ -1354,7 +1406,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
             await interaction.reply({ embeds: [untimeoutEmbed] });
         } catch (error) {
-            await interaction.reply({ content: '❌ Failed to remove timeout. Make sure the user is currently timed out.', ephemeral: true });
+            await interaction.reply({ content: '❌ Failed to remove timeout. Make sure the user is currently timed out.', flags: 64 });
         }
     }
 
@@ -1469,7 +1521,7 @@ client.on(Events.InteractionCreate, async interaction => {
         const targetMember = interaction.guild.members.cache.get(targetUser.id);
         
         if (!targetMember) {
-            return await interaction.reply({ content: '❌ User not found in this server!', ephemeral: true });
+            return await interaction.reply({ content: '❌ User not found in this server!', flags: 64 });
         }
 
         try {
@@ -1478,15 +1530,15 @@ client.on(Events.InteractionCreate, async interaction => {
             if (!stats) {
                 return await interaction.reply({ 
                     content: `${targetUser.id === interaction.user.id ? 'You haven\'t' : `${targetUser.username} hasn't`} sent any messages yet!`, 
-                    ephemeral: true 
+                    flags: 64 
                 });
             }
 
-            const levelCard = levelSystem.createLevelCard(targetMember, stats);
-            await interaction.reply({ embeds: [levelCard] });
+            const levelCard = await levelSystem.createLevelCard(targetMember, stats);
+            await interaction.reply(levelCard);
         } catch (error) {
             console.error('Error getting user stats:', error);
-            await interaction.reply({ content: '❌ An error occurred while fetching level data.', ephemeral: true });
+            await interaction.reply({ content: '❌ An error occurred while fetching level data.', flags: 64 });
         }
     }
 
@@ -1494,18 +1546,18 @@ client.on(Events.InteractionCreate, async interaction => {
         const limit = interaction.options.getInteger('limit') || 10;
         
         try {
-            const leaderboardEmbed = await levelSystem.createLeaderboard(interaction.guild, limit);
-            await interaction.reply({ embeds: [leaderboardEmbed] });
+            const result = await levelSystem.createLeaderboard(interaction.guild, limit, 1);
+            await interaction.reply({ embeds: [result.embed], components: result.components });
         } catch (error) {
             console.error('Error creating leaderboard:', error);
-            await interaction.reply({ content: '❌ An error occurred while fetching leaderboard data.', ephemeral: true });
+            await interaction.reply({ content: '❌ An error occurred while fetching leaderboard data.', flags: 64 });
         }
     }
 
     else if (commandName === 'setlevelrole') {
         // Check if user has administrator permissions
         if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-            return await interaction.reply({ content: '❌ You need Administrator permissions to use this command!', ephemeral: true });
+            return await interaction.reply({ content: '❌ You need Administrator permissions to use this command!', flags: 64 });
         }
 
         const level = interaction.options.getInteger('level');
@@ -1523,14 +1575,14 @@ client.on(Events.InteractionCreate, async interaction => {
             await interaction.reply({ embeds: [successEmbed] });
         } catch (error) {
             console.error('Error setting level role:', error);
-            await interaction.reply({ content: '❌ An error occurred while setting the level role.', ephemeral: true });
+            await interaction.reply({ content: '❌ An error occurred while setting the level role.', flags: 64 });
         }
     }
 
     else if (commandName === 'removelevelrole') {
         // Check if user has administrator permissions
         if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-            return await interaction.reply({ content: '❌ You need Administrator permissions to use this command!', ephemeral: true });
+            return await interaction.reply({ content: '❌ You need Administrator permissions to use this command!', flags: 64 });
         }
 
         const level = interaction.options.getInteger('level');
@@ -1539,7 +1591,7 @@ client.on(Events.InteractionCreate, async interaction => {
             const changes = await database.removeLevelRole(interaction.guild.id, level);
             
             if (changes === 0) {
-                return await interaction.reply({ content: `❌ No level role found for level ${level}!`, ephemeral: true });
+                return await interaction.reply({ content: `❌ No level role found for level ${level}!`, flags: 64 });
             }
 
             const successEmbed = new EmbedBuilder()
@@ -1551,7 +1603,7 @@ client.on(Events.InteractionCreate, async interaction => {
             await interaction.reply({ embeds: [successEmbed] });
         } catch (error) {
             console.error('Error removing level role:', error);
-            await interaction.reply({ content: '❌ An error occurred while removing the level role.', ephemeral: true });
+            await interaction.reply({ content: '❌ An error occurred while removing the level role.', flags: 64 });
         }
     }
 
@@ -1560,7 +1612,7 @@ client.on(Events.InteractionCreate, async interaction => {
             const levelRoles = await database.getLevelRoles(interaction.guild.id);
             
             if (levelRoles.length === 0) {
-                return await interaction.reply({ content: '❌ No level roles have been set up for this server!', ephemeral: true });
+                return await interaction.reply({ content: '❌ No level roles have been set up for this server!', flags: 64 });
             }
 
             let description = '';
@@ -1580,7 +1632,7 @@ client.on(Events.InteractionCreate, async interaction => {
             await interaction.reply({ embeds: [rolesEmbed] });
         } catch (error) {
             console.error('Error getting level roles:', error);
-            await interaction.reply({ content: '❌ An error occurred while fetching level roles.', ephemeral: true });
+            await interaction.reply({ content: '❌ An error occurred while fetching level roles.', flags: 64 });
         }
     }
 });
@@ -1631,9 +1683,13 @@ client.on(Events.GuildMemberAdd, async member => {
         }
 
         if (welcomeChannel) {
-            const welcomeEmbed = RoyalStyler.createRoyalWelcome(member);
-            await welcomeChannel.send({ embeds: [welcomeEmbed] });
-            console.log(`✅ Sent welcome message for ${member.user.tag} in ${member.guild.name}`);
+            try {
+                const welcomeEmbed = RoyalStyler.createRoyalWelcome(member);
+                await welcomeChannel.send({ embeds: [welcomeEmbed] });
+                console.log(`✅ Sent welcome message for ${member.user.tag} in ${member.guild.name}`);
+            } catch (error) {
+                console.log(`❌ Cannot send welcome message - missing permissions in ${member.guild.name}`);
+            }
         }
     } catch (error) {
         console.error('Error sending welcome message:', error);
@@ -1676,9 +1732,13 @@ client.on(Events.GuildMemberRemove, async member => {
         }
 
         if (goodbyeChannel) {
-            const goodbyeEmbed = RoyalStyler.createRoyalGoodbye(member);
-            await goodbyeChannel.send({ embeds: [goodbyeEmbed] });
-            console.log(`👋 Sent goodbye message for ${member.user.tag} in ${member.guild.name}`);
+            try {
+                const goodbyeEmbed = RoyalStyler.createRoyalGoodbye(member);
+                await goodbyeChannel.send({ embeds: [goodbyeEmbed] });
+                console.log(`👋 Sent goodbye message for ${member.user.tag} in ${member.guild.name}`);
+            } catch (error) {
+                console.log(`❌ Cannot send goodbye message - missing permissions in ${member.guild.name}`);
+            }
         }
     } catch (error) {
         console.error('Error sending goodbye message:', error);
@@ -1728,6 +1788,96 @@ client.on(Events.InteractionCreate, async interaction => {
 
     const customId = interaction.isButton() ? interaction.customId : interaction.values[0];
     let helpEmbed;
+
+    // Leaderboard button handling
+    if (customId.startsWith('lb_')) {
+        if (customId.startsWith('lb_page_')) {
+            const page = parseInt(customId.split('_')[2]);
+            const result = await levelSystem.createLeaderboard(interaction.guild, 10, page);
+            return interaction.update({ embeds: [result.embed], components: result.components });
+        }
+        
+        const Economy = require('./economy');
+        
+        if (customId === 'lb_refresh') {
+            // Check if this is XP leaderboard or Economy leaderboard
+            const currentTitle = interaction.message.embeds[0]?.title || '';
+            
+            if (currentTitle.includes('XP Leaderboard')) {
+                // Refresh XP leaderboard
+                const result = await levelSystem.createLeaderboard(interaction.guild, 10, 1);
+                return interaction.update({ embeds: [result.embed], components: result.components });
+            } else {
+                // Refresh Economy leaderboard
+                const top = Economy.getLeaderboard(10);
+                let description = '🌍 **Global Leaderboard** - Richest users across all servers!\n\n';
+                
+                for (let i = 0; i < top.length; i++) {
+                    const user = top[i];
+                    const medal = i === 0 ? '👑' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
+                    try {
+                        const discordUser = await interaction.client.users.fetch(user.user_id);
+                        description += `${medal} **${discordUser.username}** - **${user.balance.toLocaleString()}** suzu cash\n`;
+                    } catch {
+                        description += `${medal} **Unknown User** - **${user.balance.toLocaleString()}** suzu cash\n`;
+                    }
+                }
+                
+                const embed = RoyalStyler.createRoyalEmbed({
+                    title: `${ROYAL_EMOJIS.CROWN} Global Suzu Cash Leaderboard`,
+                    description: description || 'No users found!',
+                    color: ROYAL_COLORS.PURPLE,
+                    footer: { text: 'Compete with users from all servers! 💖' }
+                });
+
+                return interaction.update({ embeds: [embed] });
+            }
+        }
+        
+        if (customId === 'lb_stats') {
+            const stats = Economy.getGlobalStats();
+            const embed = RoyalStyler.createRoyalEmbed({
+                title: `${ROYAL_EMOJIS.STATS} Global Economy Statistics`,
+                description: `🌍 **Suzume's Global Economy**\n\n👥 **Total Users:** ${stats.total_users.toLocaleString()}\n💰 **Total Money:** ${stats.total_money.toLocaleString()} suzu cash\n🎲 **Total Flips:** ${stats.total_flips.toLocaleString()}\n💚 **Total Won:** ${stats.total_won.toLocaleString()}\n💔 **Total Lost:** ${stats.total_lost.toLocaleString()}\n\n✨ Your balance works on every server!`,
+                color: ROYAL_COLORS.ROYAL_BLUE,
+                footer: { text: 'Global economy powered by Suzume 💖' }
+            });
+            return interaction.update({ embeds: [embed] });
+        }
+        
+        if (customId === 'lb_myrank') {
+            const user = Economy.getUser(interaction.user.id);
+            const leaderboard = Economy.getLeaderboard(1000);
+            const position = leaderboard.findIndex(u => u.user_id === interaction.user.id) + 1;
+            const rank = position > 0 ? `#${position}` : 'Unranked';
+
+            const embed = RoyalStyler.createRoyalEmbed({
+                title: `🏆 ${interaction.user.username}'s Rank`,
+                description: `${interaction.user} here's your ranking information ✨`,
+                fields: [
+                    {
+                        name: '🏆 Global Rank',
+                        value: rank,
+                        inline: true
+                    },
+                    {
+                        name: '💰 Balance',
+                        value: `${user.balance.toLocaleString()} suzu cash`,
+                        inline: true
+                    },
+                    {
+                        name: '🎲 Total Flips',
+                        value: `${user.flip_count.toLocaleString()}`,
+                        inline: true
+                    }
+                ],
+                color: ROYAL_COLORS.GOLD,
+                thumbnail: interaction.user.displayAvatarURL({ dynamic: true }),
+                footer: { text: 'Keep climbing the ranks! 🚀' }
+            });
+            return interaction.update({ embeds: [embed] });
+        }
+    }
 
     // Help category selection
     if (customId.startsWith('help_')) {
@@ -1810,67 +1960,157 @@ client.on(Events.InteractionCreate, async interaction => {
         return interaction.update({ embeds: [helpEmbed], components: [dropdown] });
     }
 
+    // Truth/Dare/Random button handling
+    if (customId === 'truth_new' || customId === 'dare_new' || customId === 'random_new') {
+        try {
+            let endpoint, color, emoji, type;
+            
+            if (customId === 'truth_new') {
+                endpoint = 'truth';
+                color = '#4CAF50';
+                emoji = '🤔';
+                type = 'TRUTH';
+            } else if (customId === 'dare_new') {
+                endpoint = 'dare';
+                color = '#F44336';
+                emoji = '😈';
+                type = 'DARE';
+            } else {
+                endpoint = Math.random() < 0.5 ? 'truth' : 'dare';
+                color = endpoint === 'truth' ? '#4CAF50' : '#F44336';
+                emoji = endpoint === 'truth' ? '🤔' : '😈';
+                type = endpoint.toUpperCase();
+            }
+
+            let apiUrl;
+            if (endpoint === 'truth') {
+                apiUrl = `https://api.truthordarebot.xyz/v1/${endpoint}`;
+            } else {
+                apiUrl = `https://api.truthordarebot.xyz/api/${endpoint}`;
+            }
+
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+
+            const embed = new EmbedBuilder()
+                .setTitle(`Requested by ${interaction.user.username}`)
+                .setDescription(`**${data.question}**`)
+                .setColor(color)
+                .setFooter({ text: `Type: ${data.type} | Rating: ${data.rating} | ID: ${data.id}`, iconURL: interaction.user.displayAvatarURL({ dynamic: true }) })
+                .setTimestamp();
+
+            const row = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('truth_new')
+                        .setLabel('Truth')
+                        .setStyle(ButtonStyle.Success),
+                    new ButtonBuilder()
+                        .setCustomId('dare_new')
+                        .setLabel('Dare')
+                        .setStyle(ButtonStyle.Danger),
+                    new ButtonBuilder()
+                        .setCustomId('random_new')
+                        .setLabel('Random')
+                        .setStyle(ButtonStyle.Primary)
+                );
+
+            return interaction.reply({ embeds: [embed], components: [row] }).catch(error => {
+                console.error('Permission error in truth/dare buttons:', error);
+                if (error.code === 50013) {
+                    return interaction.reply({ content: 'I don\'t have permission to send messages in this channel!', ephemeral: true }).catch(() => {});
+                }
+            });
+        } catch (error) {
+            console.error('API error:', error);
+            return interaction.reply({ content: 'Failed to fetch question from API!', ephemeral: true });
+        }
+    }
+
     try {
         let response, data, embed;
 
         switch (interaction.customId) {
-            case 'new_truth':
-                response = await fetch('https://api.truthordarebot.xyz/v1/truth');
+            case "get_truth":
+                response = await fetch("https://api.truthordarebot.xyz/v1/truth");
                 data = await response.json();
+                const truthQuestion = String(data.question || "Question not available");
+                const truthId = Math.random().toString(36).substring(2, 8).toUpperCase();
                 embed = new EmbedBuilder()
-                    .setTitle('🤔 Truth Question')
-                    .setDescription(data.question)
-                    .setColor('#4169E1')
+                    .setTitle(`Requested by ${interaction.user.username}`)
+                    .setDescription(truthQuestion)
+                    .setColor(0x4169E1)
+                    .setFooter({ text: `Type: TRUTH | Rating: PG13 | ID: ${truthId}` })
                     .setTimestamp();
                 break;
 
-            case 'new_dare':
-                response = await fetch('https://api.truthordarebot.xyz/api/dare');
+            case "new_dare":
+            case "get_dare":
+                response = await fetch("https://api.truthordarebot.xyz/api/dare");
                 data = await response.json();
                 embed = new EmbedBuilder()
-                    .setTitle('😈 Dare Challenge')
-                    .setDescription(data.question)
-                    .setColor('#FF4500')
+                    .setTitle(`Requested by ${interaction.user.username}`)
+                    .setDescription(`😈 **${data.question || "Challenge not available"}**`)
+                    .setColor(0xFF4500)
+                    .setFooter({ text: `Type: ${data.type || "DARE"} | Rating: ${data.rating || "PG13"} | ID: ${data.id || "N/A"}` })
                     .setTimestamp();
                 break;
 
-            case 'get_dare':
-                response = await fetch('https://api.truthordarebot.xyz/api/dare');
+            case "get_wyr":
+                response = await fetch("https://api.truthordarebot.xyz/api/wyr");
                 data = await response.json();
                 embed = new EmbedBuilder()
-                    .setTitle('😈 Dare Challenge')
-                    .setDescription(data.question)
-                    .setColor('#FF4500')
+                    .setTitle(`Requested by ${interaction.user.username}`)
+                    .setDescription(`🤷 **${data.question || "Question not available"}**`)
+                    .setColor(0x9932CC)
+                    .setFooter({ text: `Type: ${data.type || "WYR"} | Rating: ${data.rating || "PG13"} | ID: ${data.id || "N/A"}` })
                     .setTimestamp();
                 break;
 
-            case 'get_truth':
-                response = await fetch('https://api.truthordarebot.xyz/v1/truth');
+            case "get_nhie":
+
+            case "tnd_truth":
+                response = await fetch("https://api.truthordarebot.xyz/v1/truth");
                 data = await response.json();
                 embed = new EmbedBuilder()
-                    .setTitle('🤔 Truth Question')
-                    .setDescription(data.question)
-                    .setColor('#4169E1')
+                    .setTitle(`Requested by ${interaction.user.username}`)
+                    .setDescription(`🤔 **${data.question || "Question not available"}**`)
+                    .setColor(0x4CAF50)
+                    .setFooter({ text: `Type: ${data.type || "TRUTH"} | Rating: ${data.rating || "PG13"} | ID: ${data.id || "N/A"}` })
                     .setTimestamp();
                 break;
 
-            case 'get_wyr':
-                response = await fetch('https://api.truthordarebot.xyz/api/wyr');
+            case "tnd_dare":
+                response = await fetch("https://api.truthordarebot.xyz/api/dare");
                 data = await response.json();
                 embed = new EmbedBuilder()
-                    .setTitle('🤷 Would You Rather')
-                    .setDescription(data.question)
-                    .setColor('#9932CC')
+                    .setTitle(`Requested by ${interaction.user.username}`)
+                    .setDescription(`😈 **${data.question || "Challenge not available"}**`)
+                    .setColor(0xF44336)
+                    .setFooter({ text: `Type: ${data.type || "DARE"} | Rating: ${data.rating || "PG13"} | ID: ${data.id || "N/A"}` })
                     .setTimestamp();
                 break;
 
-            case 'get_nhie':
-                response = await fetch('https://api.truthordarebot.xyz/api/nhie');
+            case "tnd_random":
+                const randomEndpoint = Math.random() < 0.5 ? "truth" : "dare";
+                response = await fetch(`https://api.truthordarebot.xyz/api/${randomEndpoint}`);
+                data = await response.json();
+                const randomColor = randomEndpoint === "truth" ? 0x4CAF50 : 0xF44336;
+                const randomEmoji = randomEndpoint === "truth" ? "🤔" : "😈";
+                embed = new EmbedBuilder()
+                    .setTitle(`Requested by ${interaction.user.username}`)
+                    .setDescription(`${randomEmoji} **${data.question || "Question not available"}**`)
+                    .setColor(randomColor)
+                    .setFooter({ text: `Type: ${data.type || randomEndpoint.toUpperCase()} | Rating: ${data.rating || "PG13"} | ID: ${data.id || "N/A"}` })
+                    .setTimestamp();
+                break;
+                response = await fetch("https://api.truthordarebot.xyz/api/nhie");
                 data = await response.json();
                 embed = new EmbedBuilder()
-                    .setTitle('🙋 Never Have I Ever')
-                    .setDescription(data.question)
-                    .setColor('#FF69B4')
+                    .setTitle(`Requested by ${interaction.user.username}`)
+                    .setDescription(`🙋 **${data.question || "Question not available"}**`)
+                    .setColor(0xFF69B4)
+                    .setFooter({ text: `Type: ${data.type || "NHIE"} | Rating: ${data.rating || "PG13"} | ID: ${data.id || "N/A"}` })
                     .setTimestamp();
                 break;
         }
@@ -1878,7 +2118,7 @@ client.on(Events.InteractionCreate, async interaction => {
         await interaction.update({ embeds: [embed] });
     } catch (error) {
         console.error('Button interaction error:', error);
-        await interaction.reply({ content: 'Failed to fetch new question!', ephemeral: true });
+        await interaction.reply({ content: 'Failed to fetch new question!', flags: 64 });
     }
 });
 
@@ -1906,7 +2146,11 @@ client.on(Events.GuildMemberAdd, async (member) => {
                 .setFooter({ text: '© Vishal\'s Royal Bot • Welcome to our community!' })
                 .setTimestamp();
             
-            channel.send({ embeds: [embed] });
+            try {
+                channel.send({ embeds: [embed] });
+            } catch (error) {
+                console.log('❌ Cannot send welcome message - missing permissions');
+            }
         }
     }
 });
@@ -1935,10 +2179,14 @@ client.on(Events.GuildMemberRemove, async (member) => {
                 .setFooter({ text: '© Vishal\'s Royal Bot • Until we meet again' })
                 .setTimestamp();
             
-            channel.send({ embeds: [embed] });
+            try {
+                channel.send({ embeds: [embed] });
+            } catch (error) {
+                console.log('❌ Cannot send goodbye message - missing permissions');
+            }
         }
     }
 });
 
 // Log in to Discord with your client's token
-client.login(process.env.DISCORD_TOKEN);
+client.login(process.env.BOT_TOKEN);

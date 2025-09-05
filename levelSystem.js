@@ -1,4 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
+const { RoyalStyler, ROYAL_COLORS, ROYAL_EMOJIS } = require('./royalStyles');
 
 class LevelSystem {
     constructor(database) {
@@ -100,17 +101,17 @@ class LevelSystem {
 
     // Handle level up
     async handleLevelUp(message, newLevel, oldLevel) {
-        const embed = new EmbedBuilder()
-            .setColor('#00ff00')
-            .setTitle('🎉 Level Up!')
-            .setDescription(`${message.author} has leveled up!`)
-            .addFields(
+        const embed = RoyalStyler.createRoyalEmbed({
+            title: `${ROYAL_EMOJIS.SPARKLES} Level Up!`,
+            description: `${message.author} has leveled up!`,
+            color: ROYAL_COLORS.GREEN,
+            thumbnail: message.author.displayAvatarURL(),
+            fields: [
                 { name: 'Previous Level', value: oldLevel.toString(), inline: true },
                 { name: 'New Level', value: newLevel.toString(), inline: true },
                 { name: 'Congratulations!', value: `You've reached level ${newLevel}!`, inline: false }
-            )
-            .setThumbnail(message.author.displayAvatarURL())
-            .setTimestamp();
+            ]
+        });
 
         try {
             await message.channel.send({ embeds: [embed] });
@@ -161,24 +162,129 @@ class LevelSystem {
     }
 
     // Create level card embed
-    createLevelCard(user, stats) {
-        const progressBar = this.createProgressBar(stats.nextLevel.current, stats.nextLevel.total);
-        
-        const embed = new EmbedBuilder()
-            .setColor('#0099ff')
-            .setTitle(`${user.displayName}'s Level Card`)
-            .setThumbnail(user.displayAvatarURL())
-            .addFields(
-                { name: '${ROYAL_EMOJIS.STATS} Level', value: stats.level.toString(), inline: true },
-                { name: '⭐ XP', value: stats.xp.toString(), inline: true },
-                { name: '🏆 Rank', value: `#${stats.rank}`, inline: true },
-                { name: '💬 Messages', value: stats.total_messages.toString(), inline: true },
-                { name: '📈 Next Level', value: `${stats.nextLevel.needed} XP needed`, inline: true },
-                { name: '${ROYAL_EMOJIS.STATS} Progress', value: progressBar, inline: false }
-            )
-            .setTimestamp();
+    // Create level card embed with canvas image
+    async createLevelCard(user, stats) {
+        try {
+            const { createCanvas, loadImage } = require('canvas');
+            const { AttachmentBuilder } = require('discord.js');
 
-        return embed;
+            const canvas = createCanvas(800, 400);
+            const ctx = canvas.getContext('2d');
+
+            // Background
+            const defaultBgUrl = 'https://i.pinimg.com/736x/2c/1b/30/2c1b30287a465fe59d297eb11ff45c78.jpg';
+            try {
+                const bg = await loadImage(defaultBgUrl);
+                ctx.drawImage(bg, 0, 0, 800, 400);
+            } catch (e) {
+                // Fallback gradient
+                const gradient = ctx.createLinearGradient(0, 0, 800, 400);
+                gradient.addColorStop(0, '#667eea');
+                gradient.addColorStop(1, '#764ba2');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, 800, 400);
+            }
+
+            // Semi-transparent overlay
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+            ctx.fillRect(0, 0, 800, 400);
+
+            // User avatar
+            try {
+                const avatar = await loadImage(user.displayAvatarURL({ extension: 'png', size: 256 }));
+                
+                // Avatar border
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 5;
+                ctx.beginPath();
+                ctx.arc(120, 120, 75, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Avatar image
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(120, 120, 70, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.clip();
+                ctx.drawImage(avatar, 50, 50, 140, 140);
+                ctx.restore();
+            } catch (error) {
+                // Fallback circle
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(120, 120, 70, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Username
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 28px Arial';
+            ctx.fillText(`${user.displayName}`, 220, 80);
+
+            // Level info
+            ctx.font = 'bold 22px Arial';
+            ctx.fillText(`🏆 Level ${stats.level}`, 220, 120);
+            ctx.fillText(`⭐ ${stats.xp.toLocaleString()} XP`, 220, 150);
+            ctx.fillText(`📈 Rank #${stats.rank}`, 220, 180);
+            ctx.fillText(`💬 ${stats.total_messages.toLocaleString()} Messages`, 220, 210);
+
+            // Progress bar
+            const barWidth = 350;
+            const barHeight = 20;
+            const barX = 220;
+            const barY = 240;
+            
+            // Progress bar background
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.fillRect(barX, barY, barWidth, barHeight);
+            
+            // Progress bar fill
+            const progress = stats.nextLevel.current / stats.nextLevel.total;
+            ctx.fillStyle = '#00ff88';
+            ctx.fillRect(barX, barY, barWidth * progress, barHeight);
+            
+            // Progress text
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '16px Arial';
+            ctx.fillText(`${stats.nextLevel.current.toLocaleString()} / ${stats.nextLevel.total.toLocaleString()} XP`, barX, barY + 35);
+            ctx.fillText(`${stats.nextLevel.needed.toLocaleString()} XP to next level`, barX, barY + 55);
+
+            // Footer
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#ffffff99';
+            ctx.fillText('Keep chatting to level up! ✨', 220, 340);
+
+            const attachment = new AttachmentBuilder(canvas.toBuffer(), { name: 'level-card.png' });
+            
+            const embed = RoyalStyler.createRoyalEmbed({
+                title: `${ROYAL_EMOJIS.DIAMOND} ${user.displayName}'s Level Card`,
+                color: ROYAL_COLORS.ROYAL_BLUE,
+                image: { url: 'attachment://level-card.png' }
+            });
+
+            return { embeds: [embed], files: [attachment] };
+
+        } catch (error) {
+            console.error('Error creating level card:', error);
+            // Fallback to simple embed
+            const progressBar = this.createProgressBar(stats.nextLevel.current, stats.nextLevel.total);
+            
+            const embed = RoyalStyler.createRoyalEmbed({
+                title: `${user.displayName}'s Level Card`,
+                thumbnail: user.displayAvatarURL(),
+                color: ROYAL_COLORS.ROYAL_BLUE,
+                fields: [
+                    { name: `${ROYAL_EMOJIS.STATS} Level`, value: stats.level.toString(), inline: true },
+                    { name: `${ROYAL_EMOJIS.STAR} XP`, value: stats.xp.toString(), inline: true },
+                    { name: '🏆 Rank', value: `#${stats.rank}`, inline: true },
+                    { name: '💬 Messages', value: stats.total_messages.toString(), inline: true },
+                    { name: '📈 Next Level', value: `${stats.nextLevel.needed} XP needed`, inline: true },
+                    { name: `${ROYAL_EMOJIS.STATS} Progress`, value: progressBar, inline: false }
+                ]
+            });
+
+            return { embeds: [embed] };
+        }
     }
 
     // Create progress bar
@@ -191,41 +297,84 @@ class LevelSystem {
         return `${bar} ${Math.round(percentage * 100)}%`;
     }
 
-    // Create leaderboard embed
-    async createLeaderboard(guild, limit = 10) {
+    // Create leaderboard embed with pagination
+    async createLeaderboard(guild, limit = 10, page = 1) {
         try {
-            const leaderboard = await this.db.getLeaderboard(guild.id, limit);
+            const totalLimit = limit * 5; // Get more data for pagination
+            const leaderboard = await this.db.getLeaderboard(guild.id, totalLimit);
             
             if (leaderboard.length === 0) {
-                return new EmbedBuilder()
-                    .setColor('#ff0000')
-                    .setTitle('${ROYAL_EMOJIS.STATS} Server Leaderboard')
-                    .setDescription('No users found in the leaderboard yet!');
+                return {
+                    embed: RoyalStyler.createRoyalEmbed({
+                        title: `${ROYAL_EMOJIS.DIAMOND} ${guild.name} XP Leaderboard`,
+                        description: 'No users found in the leaderboard yet!',
+                        color: ROYAL_COLORS.RED
+                    }),
+                    components: []
+                };
             }
+
+            // Filter active users and paginate
+            let activeUsers = [];
+            for (const userData of leaderboard) {
+                const user = await guild.members.fetch(userData.user_id).catch(() => null);
+                if (user) {
+                    activeUsers.push({ ...userData, displayName: user.displayName });
+                }
+            }
+
+            const startIndex = (page - 1) * limit;
+            const endIndex = startIndex + limit;
+            const pageUsers = activeUsers.slice(startIndex, endIndex);
+            const totalPages = Math.ceil(activeUsers.length / limit);
 
             let description = '';
-            for (let i = 0; i < leaderboard.length; i++) {
-                const userData = leaderboard[i];
-                const user = await guild.members.fetch(userData.user_id).catch(() => null);
-                const username = user ? user.displayName : 'Unknown User';
-                
-                const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
-                description += `${medal} **${username}** - Level ${userData.level} (${userData.xp} XP)\n`;
+            for (let i = 0; i < pageUsers.length; i++) {
+                const userData = pageUsers[i];
+                const position = startIndex + i + 1;
+                const medal = position === 1 ? '🥇' : position === 2 ? '🥈' : position === 3 ? '🥉' : `${position}.`;
+                description += `${medal} **${userData.displayName}** - Level ${userData.level} (${userData.xp} XP)\n`;
             }
 
-            return new EmbedBuilder()
-                .setColor('#ffd700')
-                .setTitle('${ROYAL_EMOJIS.STATS} Server Leaderboard')
-                .setDescription(description)
-                .setFooter({ text: `Showing top ${leaderboard.length} users` })
-                .setTimestamp();
+            const embed = RoyalStyler.createRoyalEmbed({
+                title: `${ROYAL_EMOJIS.DIAMOND} ${guild.name} XP Leaderboard`,
+                description,
+                color: ROYAL_COLORS.GOLD,
+                footer: { text: `Page ${page}/${totalPages} • ${activeUsers.length} active users` }
+            });
+
+            // Create pagination buttons
+            const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+            const buttons = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(`lb_page_${page - 1}`)
+                        .setLabel('◀️ Previous')
+                        .setStyle(ButtonStyle.Primary)
+                        .setDisabled(page === 1),
+                    new ButtonBuilder()
+                        .setCustomId('lb_refresh')
+                        .setLabel('🔄 Refresh')
+                        .setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder()
+                        .setCustomId(`lb_page_${page + 1}`)
+                        .setLabel('Next ▶️')
+                        .setStyle(ButtonStyle.Primary)
+                        .setDisabled(page >= totalPages)
+                );
+
+            return { embed, components: [buttons] };
 
         } catch (error) {
             console.error('Error creating leaderboard:', error);
-            return new EmbedBuilder()
-                .setColor('#ff0000')
-                .setTitle('Error')
-                .setDescription('Failed to load leaderboard data.');
+            return {
+                embed: RoyalStyler.createRoyalEmbed({
+                    title: 'Error',
+                    description: 'Failed to load leaderboard data.',
+                    color: ROYAL_COLORS.RED
+                }),
+                components: []
+            };
         }
     }
 }

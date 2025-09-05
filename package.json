@@ -1,23 +1,53 @@
 {
   "name": "suzume-discord-bot",
-  "version": "1.0.0",
-  "description": "Suzume - A powerful multi-purpose Discord bot",
+  "version": "2.1.0",
+  "description": "Suzume - A powerful, feature-rich Discord bot with 80+ commands across entertainment, moderation, and utility categories",
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js",
-    "dev": "nodemon bot.js"
+    "dev": "nodemon bot.js",
+    "deploy": "node deploy-commands.js"
   },
   "dependencies": {
     "axios": "^1.6.0",
     "better-sqlite3": "^12.2.0",
+    "canvas": "^3.2.0",
+    "cors": "^2.8.5",
     "discord.js": "^14.14.1",
     "dotenv": "^16.3.1",
     "express": "^5.1.0",
+    "node-fetch": "^3.3.2",
     "sqlite3": "^5.1.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
   },
   "engines": {
     "node": ">=18.0.0"
   },
-  "author": "Vishal",
-  "license": "MIT"
+  "keywords": [
+    "discord",
+    "bot",
+    "moderation",
+    "entertainment",
+    "utility",
+    "api",
+    "games",
+    "social"
+  ],
+  "author": {
+    "name": "Vishal",
+    "email": "04vishal.com@gmail.com",
+    "url": "https://vishal.dev"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vishalcore/suzume-bot"
+  },
+  "homepage": "https://suzume.bot",
+  "bugs": {
+    "url": "https://github.com/vishalcore/suzume-bot/issues",
+    "email": "support@suzume.bot"
+  }
 }

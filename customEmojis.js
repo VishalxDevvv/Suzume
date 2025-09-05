@@ -5,16 +5,37 @@ class CustomEmojiManager {
     
     // Bot's custom emojis (add your server's custom emojis here)
     static BOT_EMOJIS = {
-        CUTE: '<:Cute:1410642536003010741>',
-        LAUGH: '<:Laugh:1410637273728286790>',
-        LOVE: '<:love:1410636588173492314>',
-        WARNING: '<:warning:1410636131049017484>',
-        INFO: '<:info:1410635141155524758>',
-        LOADING: '<:loading:1410634302789648414>',
-        ERROR: '<:error:1410633873104179402>',
-        SUCCESS: '<a:success:1410633387751768268>',
-        WELCOME: '<a:welcome:1410218072320507904>',
-        HELLO: '<:hello:1410217672834289704>'
+        HEART: '✨',
+        GEM: '<a:gem:1412006973758767174>',
+        CASTLE: '<a:castle:1412006452259983422>',
+        SWORD: '<a:sword:1412006288640184411>',
+        SHIELD: '<a:Shield:1412005769590739004>',
+        SCROLL: '<a:scroll:1412005307218919424>',
+        CRYSTALS: '<a:crystals:1412004976288337920>',
+        SPARKLES: '<a:sparkles:1412004805517381732>',
+        STAR: '<a:star:1412004524964581427>',
+        DIAMOND: '<a:Diamond:1412004332487835708>',
+        LAUGH: '<a:laugh:1412004016103227392>',
+        CUTE: '<a:cute:1412003781603754005>',
+        ERROR: '<a:ninja_fail_error:1412003583112642590>',
+        SUCCESS: '<a:success:1412003378455642134>',
+        WELCOME: '<a:Welcome:1412003040395006063>',
+        
+        // New animated emojis
+        HELLO: '<a:hello:1412015673877598319>',
+        STATUS_IDLE: '<a:status_idle:1412015368096190515>',
+        STATUS_ONLINE: '<a:status_online:1412015257039409184>',
+        STATUS_OFFLINE: '<a:status_offline:1412015239742099456>',
+        SETTINGS: '<a:settings:1412014909704896603>',
+        TOOLS: '<a:tools:1412014731283398656>',
+        TAG: '<a:tag:1412014490794463354>',
+        USER: '<a:User:141201389435474996>',
+        NETWORK: '<a:network:1412013628693020775>',
+        PING: '<a:Ping:1412013428121534475>',
+        TIME: '<a:time:1412013235837603974>',
+        LIBRARY: '<a:Library:1412013054702653461>',
+        INFO: '<a:info:1412012918320664646>',
+        FIRE: '<a:Fire:1412016237692588122>'
     };
     
     // Get all custom emojis from a guild

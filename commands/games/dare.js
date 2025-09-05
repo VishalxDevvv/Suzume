@@ -9,34 +9,37 @@ module.exports = {
             const data = await response.json();
             
             const embed = new EmbedBuilder()
-                .setTitle('😈 Dare Challenge')
-                .setDescription(data.question)
-                .setColor('#FF4500')
+                .setTitle(`Requested by ${message.author.username}`)
+                .setDescription(`**${data.question}**`)
+                .setColor('#F44336')
+                .setFooter({ text: `Type: ${data.type} | Rating: ${data.rating} | ID: ${data.id}`, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
                 .setTimestamp();
 
             const row = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
-                        .setCustomId('get_truth')
-                        .setLabel('Get Truth')
+                        .setCustomId('truth_new')
+                        .setLabel('Truth')
+                        .setStyle(ButtonStyle.Success),
+                    new ButtonBuilder()
+                        .setCustomId('dare_new')
+                        .setLabel('Dare')
+                        .setStyle(ButtonStyle.Danger),
+                    new ButtonBuilder()
+                        .setCustomId('random_new')
+                        .setLabel('Random')
                         .setStyle(ButtonStyle.Primary)
-                        .setEmoji('🤔'),
-                    new ButtonBuilder()
-                        .setCustomId('new_dare')
-                        .setLabel('New Dare')
-                        .setStyle(ButtonStyle.Danger)
-                        .setEmoji('😈'),
-                    new ButtonBuilder()
-                        .setCustomId('get_nhie')
-                        .setLabel('Never Have I Ever')
-                        .setStyle(ButtonStyle.Success)
-                        .setEmoji('🙋')
                 );
             
-            message.reply({ embeds: [embed], components: [row] });
+            message.reply({ embeds: [embed], components: [row] }).catch(error => {
+                console.error('Permission error in dare command:', error);
+                if (error.code === 50013) {
+                    message.channel.send('I don\'t have permission to send embeds or use buttons in this channel!').catch(() => {});
+                }
+            });
         } catch (error) {
             console.error('Dare API error:', error);
-            message.reply('Failed to fetch dare challenge!');
+            message.reply('Failed to fetch dare challenge from API!');
         }
     }
 };

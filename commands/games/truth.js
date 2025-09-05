@@ -9,34 +9,37 @@ module.exports = {
             const data = await response.json();
             
             const embed = new EmbedBuilder()
-                .setTitle('🤔 Truth Question')
-                .setDescription(data.question)
-                .setColor('#4169E1')
+                .setTitle(`Requested by ${message.author.username}`)
+                .setDescription(`**${data.question}**`)
+                .setColor('#4CAF50')
+                .setFooter({ text: `Type: ${data.type} | Rating: ${data.rating} | ID: ${data.id}`, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
                 .setTimestamp();
 
             const row = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
-                        .setCustomId('new_truth')
-                        .setLabel('New Truth')
+                        .setCustomId('truth_new')
+                        .setLabel('Truth')
+                        .setStyle(ButtonStyle.Success),
+                    new ButtonBuilder()
+                        .setCustomId('dare_new')
+                        .setLabel('Dare')
+                        .setStyle(ButtonStyle.Danger),
+                    new ButtonBuilder()
+                        .setCustomId('random_new')
+                        .setLabel('Random')
                         .setStyle(ButtonStyle.Primary)
-                        .setEmoji('🤔'),
-                    new ButtonBuilder()
-                        .setCustomId('get_dare')
-                        .setLabel('Get Dare')
-                        .setStyle(ButtonStyle.Danger)
-                        .setEmoji('😈'),
-                    new ButtonBuilder()
-                        .setCustomId('get_wyr')
-                        .setLabel('Would You Rather')
-                        .setStyle(ButtonStyle.Secondary)
-                        .setEmoji('🤷')
                 );
             
-            message.reply({ embeds: [embed], components: [row] });
+            message.reply({ embeds: [embed], components: [row] }).catch(error => {
+                console.error('Permission error in truth command:', error);
+                if (error.code === 50013) {
+                    message.channel.send('I don\'t have permission to send embeds or use buttons in this channel!').catch(() => {});
+                }
+            });
         } catch (error) {
             console.error('Truth API error:', error);
-            message.reply('Failed to fetch truth question!');
+            message.reply('Failed to fetch truth question from API!');
         }
     }
 };

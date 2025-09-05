@@ -4,13 +4,13 @@ class EmojiFun {
     
     // Cute emoji collections
     static CUTE_EMOJIS = {
-        hearts: ['💖', '💕', '💗', '💓', '💝', '💘', '💌', '💟', '❤️', '🧡', '💛', '💚', '💙', '💜', '🤍', '🖤', '🤎'],
+        hearts: ['${ROYAL_EMOJIS.HEART}', '${ROYAL_EMOJIS.HEART}', '💗', '💓', '💝', '💘', '💌', '💟', '❤️', '🧡', '💛', '💚', '💙', '💜', '🤍', '🖤', '🤎'],
         flowers: ['🌸', '🌺', '🌻', '🌷', '🌹', '🏵️', '💐', '🌼', '🌿', '🍀', '🌱', '🌾'],
-        sparkles: ['✨', '⭐', '🌟', '💫', '⚡', '🔥', '💥', '🎆', '🎇', '🌠'],
-        cute_faces: ['😊', '😍', '🥰', '😘', '😚', '😙', '🤗', '🤭', '😋', '😌', '😇', '🥺', '😻', '😽', '💕'],
+        sparkles: ['✨', '${ROYAL_EMOJIS.STAR}', '🌟', '💫', '⚡', '${ROYAL_EMOJIS.SPARKLES}', '💥', '🎆', '🎇', '🌠'],
+        cute_faces: ['😊', '😍', '🥰', '😘', '😚', '😙', '🤗', '🤭', '😋', '😌', '😇', '🥺', '😻', '😽', '${ROYAL_EMOJIS.HEART}'],
         animals: ['🐱', '🐶', '🐰', '🐹', '🐼', '🐨', '🐸', '🦄', '🐝', '🦋', '🐛', '🐞'],
-        food: ['🍓', '🍑', '🍒', '🍇', '🍉', '🍊', '🍋', '🍌', '🥝', '🍍', '🥥', '🧁', '🍰', '🎂', '🍭', '🍬'],
-        nature: ['🌙', '☀️', '⭐', '🌈', '☁️', '⛅', '🌤️', '🌦️', '❄️', '☃️', '🌊', '🏔️']
+        food: ['🍓', '🍑', '🍒', '🍇', '🍉', '🍊', '🍋', '🍌', '🥝', '🍍', '🥥', '🧁', '${ROYAL_EMOJIS.STAR}', '${ROYAL_EMOJIS.STAR}', '🍭', '🍬'],
+        nature: ['🌙', '☀️', '${ROYAL_EMOJIS.STAR}', '🌈', '☁️', '⛅', '🌤️', '🌦️', '❄️', '☃️', '🌊', '🏔️']
     };
     
     // Get random emoji from category
@@ -100,13 +100,13 @@ class EmojiFun {
     // Create emoji mood embed
     static createEmojiMoodEmbed(mood) {
         const moodEmojis = {
-            happy: ['😊', '😄', '😁', '🥰', '😍', '🤗', '😋', '😌', '✨', '🌟', '💖', '🌈'],
+            happy: ['😊', '😄', '😁', '🥰', '😍', '🤗', '😋', '😌', '✨', '🌟', '${ROYAL_EMOJIS.HEART}', '🌈'],
             sad: ['😢', '😭', '😔', '😞', '💔', '🥺', '😿', '🌧️', '☁️', '💙'],
-            excited: ['🤩', '😆', '🎉', '🎊', '✨', '⭐', '🔥', '💥', '${ROYAL_EMOJIS.ROCKET}', '🎆'],
-            love: ['💕', '💖', '💗', '💓', '💘', '💝', '😍', '🥰', '😘', '💋', '🌹', '💐'],
-            sleepy: ['😴', '😪', '🥱', '😌', '🌙', '⭐', '☁️', '💤', '🛏️'],
-            angry: ['😠', '😡', '🤬', '👿', '💢', '🔥', '⚡', '💥', '🌋'],
-            cool: ['😎', '🆒', '✨', '⭐', '🔥', '💎', '👑', '🌟', '💫']
+            excited: ['🤩', '😆', '${ROYAL_EMOJIS.SPARKLES}', '${ROYAL_EMOJIS.SPARKLES}', '✨', '${ROYAL_EMOJIS.STAR}', '${ROYAL_EMOJIS.SPARKLES}', '💥', '${ROYAL_EMOJIS.ROCKET}', '🎆'],
+            love: ['${ROYAL_EMOJIS.HEART}', '${ROYAL_EMOJIS.HEART}', '💗', '💓', '💘', '💝', '😍', '🥰', '😘', '💋', '🌹', '💐'],
+            sleepy: ['😴', '😪', '🥱', '😌', '🌙', '${ROYAL_EMOJIS.STAR}', '☁️', '💤', '🛏️'],
+            angry: ['😠', '😡', '🤬', '👿', '💢', '${ROYAL_EMOJIS.SPARKLES}', '⚡', '💥', '🌋'],
+            cool: ['😎', '🆒', '✨', '${ROYAL_EMOJIS.STAR}', '${ROYAL_EMOJIS.SPARKLES}', '💎', '👑', '🌟', '💫']
         };
         
         const emojis = moodEmojis[mood.toLowerCase()] || moodEmojis.happy;
