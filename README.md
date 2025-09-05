@@ -27,12 +27,12 @@ The bot includes a comprehensive leveling system with the following features:
 
 ### Commands
 **Text Commands:**
-- `+level [@user]` - Show level card for yourself or another user
-- `+rank [@user]` - Same as level command
-- `+leaderboard` - Show top 10 users in the server
-- `+setlevelrole <level> @role` - Set a role to be given at a specific level (Admin only)
-- `+removelevelrole <level>` - Remove a level role (Admin only)
-- `+levelroles` - Show all configured level roles
+- `$level [@user]` - Show level card for yourself or another user
+- `$rank [@user]` - Same as level command
+- `$leaderboard` - Show top 10 users in the server
+- `$setlevelrole <level> @role` - Set a role to be given at a specific level (Admin only)
+- `$removelevelrole <level>` - Remove a level role (Admin only)
+- `$levelroles` - Show all configured level roles
 
 **Slash Commands:**
 - `/level [user]` - Show level card
@@ -171,30 +171,30 @@ npm run dev
 ### Text Commands (Prefix: `+`)
 
 **📋 General Commands:**
-- `+help` - Shows all available commands
-- `+ping` - Shows bot latency and API ping
-- `+hello` - Greets the user with server name
-- `+serverinfo` - Displays detailed server information
-- `+botinfo` - Shows bot statistics and uptime
-- `+prefix` - Shows current bot prefix
+- `$help` - Shows all available commands
+- `$ping` - Shows bot latency and API ping
+- `$hello` - Greets the user with server name
+- `$serverinfo` - Displays detailed server information
+- `$botinfo` - Shows bot statistics and uptime
+- `$prefix` - Shows current bot prefix
 
 **🔨 Moderation Commands:**
-- `+ban @user [reason]` - Ban a user from the server
-- `+unban <user_id>` - Unban a user by their ID
-- `+kick @user [reason]` - Kick a user from the server
-- `+timeout @user <duration> [reason]` - Timeout a user (e.g., 10m, 1h, 1d)
-- `+untimeout @user` - Remove timeout from a user
-- `+mute` - Alias for timeout
-- `+unmute` - Alias for untimeout
+- `$ban @user [reason]` - Ban a user from the server
+- `$unban <user_id>` - Unban a user by their ID
+- `$kick @user [reason]` - Kick a user from the server
+- `$timeout @user <duration> [reason]` - Timeout a user (e.g., 10m, 1h, 1d)
+- `$untimeout @user` - Remove timeout from a user
+- `$mute` - Alias for timeout
+- `$unmute` - Alias for untimeout
 
 **💬 Utility Commands:**
-- `+afk [reason]` - Set yourself as AFK
-- `+userinfo [@user]` - Get information about a user
-- `+avatar [@user]` - Get a user's avatar
+- `$afk [reason]` - Set yourself as AFK
+- `$userinfo [@user]` - Get information about a user
+- `$avatar [@user]` - Get a user's avatar
 
 **🎮 Fun Commands:**
-- `+8ball <question>` - Ask the magic 8-ball a question
-- `+ship <person1> [person2]` - Calculate love compatibility between two people
+- `$8ball <question>` - Ask the magic 8-ball a question
+- `$ship <person1> [person2]` - Calculate love compatibility between two people
 
 ### Slash Commands
 - `/ping` - Shows bot latency and API ping
