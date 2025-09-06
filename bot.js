@@ -2436,9 +2436,6 @@ const player = new Player(client, {
 // Register the Youtubei extractor (this is what makes it work!)
 player.extractors.register(YoutubeiExtractor, {});
 
-// Load all extractors
-player.extractors.loadDefault((ext) => ext !== 'YouTubeExtractor');
-
 // Add player event listeners for debugging
 player.events.on('playerStart', (queue, track) => {
     console.log(`🎵 Started playing: ${track.title}`);
