@@ -18,6 +18,8 @@ process.on('uncaughtException', (error) => {
 });
 
 const { Client, GatewayIntentBits, Events, Collection, EmbedBuilder, PermissionsBitField, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } = require('discord.js');
+const { Player } = require('discord-player');
+const { YoutubeiExtractor } = require('discord-player-youtubei');
 const Database = require('./database');
 const LevelSystem = require('./levelSystem');
 const { RoyalStyler, ROYAL_COLORS, ROYAL_EMOJIS } = require('./royalStyles');
@@ -153,7 +155,8 @@ const client = new Client({
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildModeration
+        GatewayIntentBits.GuildModeration,
+        GatewayIntentBits.GuildVoiceStates
     ]
 });
 
@@ -326,10 +329,24 @@ client.on(Events.MessageCreate, async message => {
         }
     };
 
-    // Check if command exists in commands collection
+    // Check if command exists in commands collection or as an alias
+    let commandToExecute = null;
+    
     if (commands.has(command)) {
+        commandToExecute = commands.get(command);
+    } else {
+        // Check for aliases
+        for (const [name, cmd] of commands) {
+            if (cmd.aliases && cmd.aliases.includes(command)) {
+                commandToExecute = cmd;
+                break;
+            }
+        }
+    }
+    
+    if (commandToExecute) {
         try {
-            await commands.get(command).execute(message, args);
+            await commandToExecute.execute(message, args);
             return;
         } catch (error) {
             console.error('Command execution error:', error);
@@ -1801,6 +1818,210 @@ process.on('SIGTERM', () => {
 client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 
+    // AI suggestions dropdown handler
+    if (interaction.customId === 'ai_suggestions') {
+        const { useMainPlayer } = require('discord-player');
+        const player = useMainPlayer();
+        
+        if (!interaction.member.voice.channel) {
+            return interaction.reply({ content: 'You need to be in a voice channel!', ephemeral: true });
+        }
+
+        const selectedTracks = interaction.values;
+        let addedCount = 0;
+        
+        for (const track of selectedTracks) {
+            try {
+                await player.play(interaction.member.voice.channel, track, {
+                    nodeOptions: {
+                        metadata: { 
+                            channel: interaction.channel, 
+                            requestedBy: interaction.user 
+                        },
+                        volume: 75
+                    }
+                });
+                addedCount++;
+            } catch (error) {
+                console.log(`Failed to add: ${track}`);
+            }
+        }
+        
+        await interaction.reply({ 
+            content: `🤖 Added ${addedCount}/${selectedTracks.length} AI suggested tracks to queue!`, 
+            ephemeral: true 
+        });
+        return;
+    }
+
+    // Music button handlers
+    if (interaction.customId.startsWith('music_')) {
+        const { useMainPlayer } = require('discord-player');
+        const player = useMainPlayer();
+        const queue = player.nodes.get(interaction.guild.id);
+
+        if (!queue || !queue.currentTrack) {
+            return interaction.reply({ content: '❌ No music is currently playing!', ephemeral: true });
+        }
+
+        switch (interaction.customId) {
+            case 'music_pause':
+                if (queue.node.isPaused()) {
+                    queue.node.resume();
+                    await interaction.reply({ content: '▶️ Resumed the music!', ephemeral: true });
+                } else {
+                    queue.node.pause();
+                    await interaction.reply({ content: '⏸️ Paused the music!', ephemeral: true });
+                }
+                break;
+
+            case 'music_skip':
+                queue.node.skip();
+                await interaction.reply({ content: '⏭️ Skipped the current song!', ephemeral: true });
+                break;
+
+            case 'music_stop':
+                queue.delete();
+                await interaction.reply({ content: '⏹️ Stopped music and cleared queue!', ephemeral: true });
+                break;
+
+            case 'music_shuffle':
+                if (queue.tracks.size < 2) {
+                    return interaction.reply({ content: '❌ Need at least 2 songs in queue to shuffle!', ephemeral: true });
+                }
+                queue.tracks.shuffle();
+                await interaction.reply({ content: `🔀 Shuffled ${queue.tracks.size} songs!`, ephemeral: true });
+                break;
+
+            case 'music_loop':
+                const modes = ['Off', 'Track', 'Queue'];
+                const currentMode = queue.repeatMode;
+                const nextMode = (currentMode + 1) % 3;
+                queue.setRepeatMode(nextMode);
+                await interaction.reply({ content: `🔁 Loop mode: ${modes[nextMode]}`, ephemeral: true });
+                break;
+
+            case 'music_queue':
+                const { EmbedBuilder } = require('discord.js');
+                const embed = new EmbedBuilder()
+                    .setColor('#ff6b6b')
+                    .setTitle('🎵 Music Queue')
+                    .setTimestamp();
+
+                embed.addFields({
+                    name: '🎶 Now Playing',
+                    value: `**${queue.currentTrack.title}**\nBy: ${queue.currentTrack.author}`,
+                    inline: false
+                });
+
+                if (queue.tracks.size > 0) {
+                    const tracks = queue.tracks.toArray().slice(0, 10);
+                    const trackList = tracks.map((track, index) => 
+                        `${index + 1}. **${track.title}** - ${track.author}`
+                    ).join('\n');
+
+                    embed.addFields({
+                        name: `📋 Up Next (${queue.tracks.size} songs)`,
+                        value: trackList,
+                        inline: false
+                    });
+                }
+
+                await interaction.reply({ embeds: [embed], ephemeral: true });
+                break;
+
+            case 'music_volume':
+                await interaction.reply({ 
+                    content: `🔊 Current volume: **${queue.node.volume}%**\nUse \`$volume <0-100>\` to change it!`, 
+                    ephemeral: true 
+                });
+                break;
+
+            case 'music_previous':
+                if (queue.history.tracks.length === 0) {
+                    return interaction.reply({ content: '❌ No previous songs in history!', ephemeral: true });
+                }
+                await queue.history.back();
+                await interaction.reply({ content: '⏮️ Playing previous song!', ephemeral: true });
+                break;
+        }
+        return;
+    }
+
+    // AI suggestion button handlers
+    if (interaction.customId.startsWith('ai_')) {
+        const { useMainPlayer, QueryType } = require('discord-player');
+        const player = useMainPlayer();
+        
+        const originalMessage = await interaction.message.fetch();
+        const suggestions = originalMessage.aiSuggestions || [];
+        
+        if (!suggestions.length) {
+            return interaction.reply({ content: '❌ No suggestions available!', ephemeral: true });
+        }
+
+        switch (interaction.customId) {
+            case 'ai_add_all':
+                if (!interaction.member.voice.channel) {
+                    return interaction.reply({ content: 'You need to be in a voice channel!', ephemeral: true });
+                }
+                
+                let addedCount = 0;
+                for (const suggestion of suggestions) {
+                    try {
+                        await player.play(interaction.member.voice.channel, suggestion, {
+                            nodeOptions: {
+                                metadata: { channel: interaction.channel, requestedBy: interaction.user },
+                                volume: 75
+                            }
+                        });
+                        addedCount++;
+                    } catch (error) {
+                        console.log(`Failed to add: ${suggestion}`);
+                    }
+                }
+                
+                await interaction.reply({ 
+                    content: `🎵 Added ${addedCount}/${suggestions.length} AI suggestions to queue!`, 
+                    ephemeral: true 
+                });
+                break;
+
+            case 'ai_add_random':
+                if (!interaction.member.voice.channel) {
+                    return interaction.reply({ content: 'You need to be in a voice channel!', ephemeral: true });
+                }
+                
+                const randomSong = suggestions[Math.floor(Math.random() * suggestions.length)];
+                try {
+                    await player.play(interaction.member.voice.channel, randomSong, {
+                        nodeOptions: {
+                            metadata: { channel: interaction.channel, requestedBy: interaction.user },
+                            volume: 75
+                        }
+                    });
+                    await interaction.reply({ 
+                        content: `🎲 Added random AI suggestion: **${randomSong}**`, 
+                        ephemeral: true 
+                    });
+                } catch (error) {
+                    await interaction.reply({ 
+                        content: '❌ Failed to add random suggestion!', 
+                        ephemeral: true 
+                    });
+                }
+                break;
+
+            case 'ai_refresh':
+                await interaction.reply({ 
+                    content: '🔄 Use the suggest command again for new AI recommendations!', 
+                    ephemeral: true 
+                });
+                break;
+        }
+        return;
+    }
+
     const customId = interaction.isButton() ? interaction.customId : interaction.values[0];
     let helpEmbed;
 
@@ -2200,6 +2421,38 @@ client.on(Events.GuildMemberRemove, async (member) => {
         }
     }
 });
+
+// Initialize discord-player with working config
+const player = new Player(client, {
+    ytdlOptions: {
+        quality: 'highestaudio',
+        highWaterMark: 1 << 25,
+        filter: 'audioonly'
+    },
+    skipFFmpeg: false
+});
+
+// Register the Youtubei extractor (this is what makes it work!)
+player.extractors.register(YoutubeiExtractor, {});
+
+// Add player event listeners for debugging
+player.events.on('playerStart', (queue, track) => {
+    console.log(`🎵 Started playing: ${track.title}`);
+});
+
+player.events.on('audioTrackAdd', (queue, track) => {
+    console.log(`➕ Added to queue: ${track.title}`);
+});
+
+player.events.on('error', (queue, error) => {
+    console.log(`❌ Player error: ${error.message}`);
+});
+
+player.events.on('playerError', (queue, error) => {
+    console.log(`❌ Player error: ${error.message}`);
+});
+
+console.log('🎵 Music player initialized with Youtubei extractor');
 
 // Log in to Discord with your client's token
 client.login(process.env.BOT_TOKEN);

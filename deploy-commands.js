@@ -265,7 +265,26 @@ const commands = [
     { name: 'dance', description: 'Show dancing animation' },
     { name: 'blush', description: 'Show blushing emotion' },
     { name: 'sleep', description: 'Show sleeping animation' },
-    { name: 'smile', description: 'Show smiling emotion' }
+    { name: 'smile', description: 'Show smiling emotion' },
+    
+    // Music commands
+    {
+        name: 'play',
+        description: 'Play music from YouTube',
+        options: [{ name: 'query', description: 'Song name or YouTube URL', type: 3, required: true }]
+    },
+    { name: 'skip', description: 'Skip the current song' },
+    { name: 'stop', description: 'Stop music and clear queue' },
+    { name: 'queue', description: 'Show the music queue' },
+    { name: 'pause', description: 'Pause or resume the current song' },
+    { name: 'shuffle', description: 'Shuffle the music queue' },
+    { name: 'nowplaying', description: 'Show currently playing song with controls' },
+    { name: 'controller', description: 'Show music controller with buttons' },
+    {
+        name: 'volume',
+        description: 'Change the music volume',
+        options: [{ name: 'level', description: 'Volume level (0-100)', type: 4, required: false }]
+    }
 ];
 
 const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN);
