@@ -60,8 +60,21 @@ const ROYAL_EMOJIS = {
     FANCY_DIVIDER: "<:bow_divider:1413228013826478132><:black_divider:1413227997208776895><a:divide:1413227844384985139>",
     ROCKET: "<a:Fire:1412016237692588122>",
     STATS: "<a:Diamond:1412004332487835708>",
-    BULB: "<a:star:1412004524964581427>",
+    BULB: "💡",
     CATEGORY: "<a:settings:1412014909704896603>",
+    // Additional missing emojis
+    API: "🌐",
+    UTILITY: "🔧",
+    GAMES: "🎮",
+    MODERATION: "🛡️",
+    SOCIAL: "👥",
+    ENTERTAINMENT: "🎭",
+    VISUAL: "🖼️",
+    CRYPTO: "💰",
+    XP: "⭐",
+    LOADING: "⏳",
+    GIFT: "🎁",
+    SHOP: "🛒"
 };
 
 // Royal decorative elements

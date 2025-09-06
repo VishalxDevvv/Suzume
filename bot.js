@@ -757,7 +757,7 @@ client.on(Events.MessageCreate, async message => {
     else if (command === 'serverinfo') {
         const serverEmbed = new EmbedBuilder()
             .setColor(0x0099FF)
-            .setTitle('${ROYAL_EMOJIS.STATS} Server Information')
+            .setTitle(`${ROYAL_EMOJIS.STATS} Server Information`)
             .setThumbnail(message.guild.iconURL())
             .addFields(
                 { name: '🏷️ Server Name', value: message.guild.name, inline: true },
@@ -782,7 +782,7 @@ client.on(Events.MessageCreate, async message => {
                 { name: '🏷️ Bot Name', value: client.user.username, inline: true },
                 { name: '🆔 Bot ID', value: client.user.id, inline: true },
                 { name: '🔧 Prefix', value: `\`${PREFIX}\``, inline: true },
-                { name: '${ROYAL_EMOJIS.STATS} Servers', value: client.guilds.cache.size.toString(), inline: true },
+                { name: `${ROYAL_EMOJIS.STATS} Servers`, value: client.guilds.cache.size.toString(), inline: true },
                 { name: '👥 Total Users', value: client.users.cache.size.toString(), inline: true },
                 { name: '🏓 Ping', value: `${Math.round(client.ws.ping)}ms`, inline: true },
                 { name: '⏱️ Uptime', value: formatUptime(client.uptime), inline: true },
@@ -992,7 +992,7 @@ client.on(Events.MessageCreate, async message => {
             .addFields(
                 { name: '👋 Hello!', value: `Welcome to **${message.guild.name}**!`, inline: false },
                 { name: '📋 Getting Started', value: `Use \`${PREFIX}help\` to see all available commands`, inline: false },
-                { name: '${ROYAL_EMOJIS.STATS} Level System', value: 'Start chatting to gain XP and level up!', inline: false },
+                { name: `${ROYAL_EMOJIS.STATS} Level System`, value: 'Start chatting to gain XP and level up!', inline: false },
                 { name: '👥 Member Count', value: `You are member #${message.guild.memberCount}`, inline: true }
             )
             .setThumbnail(message.author.displayAvatarURL())
@@ -1013,7 +1013,7 @@ client.on(Events.MessageCreate, async message => {
             .setTitle('👋 Goodbye! (TEST)')
             .setDescription(`**${message.author.tag}** has left the server.`)
             .addFields(
-                { name: '${ROYAL_EMOJIS.STATS} Member Count', value: `We now have ${message.guild.memberCount} members`, inline: true },
+                { name: `${ROYAL_EMOJIS.STATS} Member Count`, value: `We now have ${message.guild.memberCount} members`, inline: true },
                 { name: '⏰ Joined', value: message.member.joinedAt ? `<t:${Math.floor(message.member.joinedAt.getTime() / 1000)}:R>` : 'Unknown', inline: true }
             )
             .setThumbnail(message.author.displayAvatarURL())
@@ -1263,7 +1263,7 @@ client.on(Events.InteractionCreate, async interaction => {
             .addFields(
                 { name: '🏷️ Bot Name', value: client.user.username, inline: true },
                 { name: '🆔 Bot ID', value: client.user.id, inline: true },
-                { name: '${ROYAL_EMOJIS.STATS} Servers', value: client.guilds.cache.size.toString(), inline: true },
+                { name: `${ROYAL_EMOJIS.STATS} Servers`, value: client.guilds.cache.size.toString(), inline: true },
                 { name: '👥 Total Users', value: client.users.cache.size.toString(), inline: true },
                 { name: '🏓 Ping', value: `${Math.round(client.ws.ping)}ms`, inline: true },
                 { name: '⏱️ Uptime', value: formatUptime(client.uptime), inline: true },

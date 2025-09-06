@@ -1,33 +1,17 @@
 const { EmbedBuilder } = require('discord.js');
+const { RoyalStyler, ROYAL_COLORS, ROYAL_EMOJIS } = require('../../royalStyles');
 
 module.exports = {
     name: 'nasa',
-    description: 'Get NASA\'s Astronomy Picture of the Day',
+    description: 'Get NASA picture of the day',
     async execute(message, args) {
-        try {
-            const response = await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');
-            const data = await response.json();
-            
-            const embed = new EmbedBuilder()
-                .setTitle(`${ROYAL_EMOJIS.ROCKET} ${data.title}`)
-                .setDescription(data.explanation.substring(0, 500) + '...')
-                .setImage(data.media_type === 'image' ? data.url : data.thumbnail_url)
-                .setColor('#1e3a8a')
-                .addFields(
-                    { name: '📅 Date', value: data.date, inline: true },
-                    { name: '📸 Copyright', value: data.copyright || 'NASA', inline: true }
-                )
-                .setFooter({ text: 'NASA Astronomy Picture of the Day' })
-                .setTimestamp();
+        const embed = RoyalStyler.createRoyalEmbed({
+            title: '🚀 NASA Service Unavailable',
+            description: `${ROYAL_EMOJIS.ERROR} NASA service is currently unavailable. Please try again later.`,
+            color: ROYAL_COLORS.CRIMSON,
+            footer: { text: 'Service temporarily disabled' }
+        });
 
-            if (data.media_type === 'video') {
-                embed.addFields({ name: '🎥 Video', value: `[Watch Here](${data.url})`, inline: false });
-            }
-
-            message.reply({ embeds: [embed] });
-        } catch (error) {
-            console.error('NASA API error:', error);
-            message.reply('Failed to fetch NASA picture!');
-        }
+        message.reply({ embeds: [embed] });
     }
 };
