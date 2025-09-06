@@ -19,7 +19,6 @@ process.on('uncaughtException', (error) => {
 
 const { Client, GatewayIntentBits, Events, Collection, EmbedBuilder, PermissionsBitField, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } = require('discord.js');
 const { Player } = require('discord-player');
-const { YoutubeiExtractor } = require('discord-player-youtubei');
 const Database = require('./database');
 const LevelSystem = require('./levelSystem');
 const { RoyalStyler, ROYAL_COLORS, ROYAL_EMOJIS } = require('./royalStyles');
@@ -2429,12 +2428,8 @@ const player = new Player(client, {
         highWaterMark: 1 << 25,
         filter: 'audioonly'
     },
-    skipFFmpeg: false,
-    useLegacyFFmpeg: false
+    skipFFmpeg: false
 });
-
-// Register the Youtubei extractor (this is what makes it work!)
-player.extractors.register(YoutubeiExtractor, {});
 
 // Add player event listeners for debugging
 player.events.on('playerStart', (queue, track) => {
@@ -2460,7 +2455,7 @@ player.events.on('emptyQueue', (queue) => {
     queue.metadata.channel.send('✅ Queue finished!');
 });
 
-console.log('🎵 Music player initialized with Youtubei extractor');
+console.log('🎵 Music player initialized with default extractors');
 
 // Log in to Discord with your client's token
 client.login(process.env.BOT_TOKEN);
