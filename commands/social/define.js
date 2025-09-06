@@ -25,11 +25,10 @@ module.exports = {
                 .setTitle(`${entry.word}`)
                 .setDescription(`**${meaning.partOfSpeech}**\n\n${definition.definition}`)
                 .setColor('#4ade80')
-                .setFooter({ text: 'Dictionary API' })
                 .setTimestamp();
 
             if (definition.example) {
-                embed.addFields({ name: '${ROYAL_EMOJIS.BULB} Example', value: `"${definition.example}"`, inline: false });
+                embed.addFields({ name: 'Example', value: `"${definition.example}"`, inline: false });
             }
 
             if (entry.phonetics && entry.phonetics[0] && entry.phonetics[0].text) {

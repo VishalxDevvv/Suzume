@@ -29,8 +29,7 @@ module.exports = {
                 fields: [
                     { name: 'Example', value: definition.example || 'No example available', inline: false },
                     { name: 'Phonetic', value: entry.phonetic || 'Not available', inline: true }
-                ],
-                footer: { text: 'Source: Free Dictionary API' }
+                ]
             });
 
             message.reply({ embeds: [embed] });
