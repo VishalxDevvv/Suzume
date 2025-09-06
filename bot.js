@@ -2429,15 +2429,20 @@ const player = new Player(client, {
         highWaterMark: 1 << 25,
         filter: 'audioonly'
     },
-    skipFFmpeg: false
+    skipFFmpeg: false,
+    useLegacyFFmpeg: false
 });
 
 // Register the Youtubei extractor (this is what makes it work!)
 player.extractors.register(YoutubeiExtractor, {});
 
+// Load all extractors
+player.extractors.loadDefault((ext) => ext !== 'YouTubeExtractor');
+
 // Add player event listeners for debugging
 player.events.on('playerStart', (queue, track) => {
     console.log(`🎵 Started playing: ${track.title}`);
+    queue.metadata.channel.send(`🎵 Now playing: **${track.title}**`);
 });
 
 player.events.on('audioTrackAdd', (queue, track) => {
@@ -2446,10 +2451,16 @@ player.events.on('audioTrackAdd', (queue, track) => {
 
 player.events.on('error', (queue, error) => {
     console.log(`❌ Player error: ${error.message}`);
+    queue.metadata.channel.send(`❌ Error: ${error.message}`);
 });
 
 player.events.on('playerError', (queue, error) => {
     console.log(`❌ Player error: ${error.message}`);
+    queue.metadata.channel.send(`❌ Playback error: ${error.message}`);
+});
+
+player.events.on('emptyQueue', (queue) => {
+    queue.metadata.channel.send('✅ Queue finished!');
 });
 
 console.log('🎵 Music player initialized with Youtubei extractor');
